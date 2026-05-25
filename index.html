@@ -1628,7 +1628,7 @@ function globalSearch(q){
     el.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div>No results for "${q}"</div>`;
     return;
   }
-  el.innerHTML=results.map(r=>`
+  el.innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">${results.length} result${results.length===1?'':'s'} for "<strong style="color:var(--text);">${q}</strong>"</div>`+results.map(r=>`
     <div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 16px;" onclick="${r.action}">
       <span class="tag">${r.section}</span>
       <div>
