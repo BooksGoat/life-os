@@ -475,7 +475,70 @@
 </div><!-- #app -->
 
 <script>
-// JS added in Tasks 2-13
+// ── STATE ────────────────────────────────────────────────
+const STORE_KEY = 'lifeos_data';
+
+function defaultState() {
+  return {
+    recipes: [],
+    watch: { movies: [], youtube: [] },
+    health: { workouts: [], weight: [], meals: [], water: { count: 0, date: '' } },
+    mind: { sessions: [], bookmarks: [], gratitude: [] },
+    books: [],
+    family: { notes: [], milestones: [], reminders: [] },
+    ideas: [],
+    habits: {},
+    streak: 0,
+    settings: { googleClientId: '', tmdbKey: '' }
+  };
+}
+
+function getState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState();
+  } catch { return defaultState(); }
+}
+
+function setState(updater) {
+  const next = updater(getState());
+  localStorage.setItem(STORE_KEY, JSON.stringify(next));
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+if (!localStorage.getItem(STORE_KEY)) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(defaultState()));
+}
+
+// ── ROUTER ───────────────────────────────────────────────
+const sectionRenderers = {};
+
+function navigate(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  const target = document.getElementById(sectionId) || document.getElementById('today');
+  target.classList.add('active');
+
+  const btn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (sectionRenderers[sectionId]) sectionRenderers[sectionId]();
+
+  if (sectionId !== 'search-results') {
+    document.getElementById('global-search').value = '';
+  }
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => navigate(btn.dataset.section));
+});
 </script>
 
 </body>
