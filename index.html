@@ -490,11 +490,61 @@
 
       <!-- HEALTH -->
       <section id="health" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">💪</div>
-          Health — coming in Task 7
+  <div class="section-title">💪 Health</div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button class="btn btn-primary" id="h-tab-workout" onclick="switchHealthTab('workout')">Workout</button>
+    <button class="btn" id="h-tab-weight" onclick="switchHealthTab('weight')">Weight</button>
+    <button class="btn" id="h-tab-meals" onclick="switchHealthTab('meals')">Meals</button>
+    <button class="btn" id="h-tab-water" onclick="switchHealthTab('water')">Water</button>
+  </div>
+  <div id="h-panel-workout">
+    <div class="card" style="margin-bottom:16px;">
+      <div class="label" style="margin-bottom:10px;">Log Workout</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:12px;align-items:end;">
+        <div><label class="label">Type</label>
+          <select id="w-type"><option>Gym</option><option>Yoga</option><option>Run</option><option>Home</option><option>Swim</option><option>Other</option></select>
         </div>
-      </section>
+        <div><label class="label">Duration (min)</label><input type="number" id="w-duration" min="1" max="300" placeholder="45"></div>
+        <div><label class="label">Date</label><input type="date" id="w-date"></div>
+        <div><label class="label">Notes</label><input type="text" id="w-notes" placeholder="Chest day, 5km…"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="logWorkout()">Log Workout</button>
+    </div>
+    <div id="workout-history"></div>
+  </div>
+  <div id="h-panel-weight" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;gap:12px;align-items:end;">
+        <div><label class="label">Weight (kg)</label><input type="number" id="wt-kg" step="0.1" min="30" max="200" placeholder="70.5" style="width:120px;"></div>
+        <div><label class="label">Date</label><input type="date" id="wt-date" style="width:160px;"></div>
+        <button class="btn btn-primary" onclick="logWeight()">Add</button>
+      </div>
+    </div>
+    <div class="card"><canvas id="weight-chart" height="100"></canvas></div>
+  </div>
+  <div id="h-panel-meals" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end;">
+        <div><label class="label">Meal</label>
+          <select id="meal-type"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+        </div>
+        <div><label class="label">Date</label><input type="date" id="meal-date"></div>
+        <div><label class="label">What did you eat?</label><input type="text" id="meal-text" placeholder="Dal, rice, sabzi…"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="logMeal()">Log Meal</button>
+    </div>
+    <div id="meal-history"></div>
+  </div>
+  <div id="h-panel-water" class="hidden">
+    <div class="card" style="text-align:center;padding:40px;">
+      <div id="water-display" class="big-num" style="font-size:56px;margin-bottom:8px;">0</div>
+      <div style="color:var(--muted);margin-bottom:24px;">glasses today (goal: 8)</div>
+      <div id="water-glasses" style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;flex-wrap:wrap;"></div>
+      <button class="btn btn-primary" style="font-size:18px;padding:14px 32px;" onclick="addWater()">+ Add Glass 💧</button>
+      <button class="btn" style="margin-left:12px;" onclick="resetWater()">Reset</button>
+    </div>
+  </div>
+</section>
 
       <!-- MIND -->
       <section id="mind" class="section">
@@ -929,6 +979,143 @@ function deleteYT(id) {
 }
 
 sectionRenderers['watch'] = () => { switchWatchTab(currentWatchTab); };
+
+// ── HEALTH ───────────────────────────────────────────────
+let weightChart = null;
+
+function switchHealthTab(tab) {
+  ['workout','weight','meals','water'].forEach(t => {
+    document.getElementById(`h-panel-${t}`).classList.toggle('hidden', t!==tab);
+    document.getElementById(`h-tab-${t}`).className = 'btn' + (t===tab?' btn-primary':'');
+  });
+  if (tab==='weight') renderWeightChart();
+  if (tab==='workout') renderWorkoutHistory();
+  if (tab==='meals') renderMealHistory();
+  if (tab==='water') renderWater();
+}
+
+function logWorkout() {
+  const type = document.getElementById('w-type').value;
+  const duration = parseInt(document.getElementById('w-duration').value)||0;
+  const date = document.getElementById('w-date').value || today();
+  const notes = document.getElementById('w-notes').value.trim();
+  if (!duration) return alert('Enter duration');
+  setState(s => { s.health.workouts.unshift({id:uid(),type,duration,date,notes}); return s; });
+  document.getElementById('w-duration').value='';
+  document.getElementById('w-notes').value='';
+  renderWorkoutHistory();
+  showToast('Workout logged ✓');
+}
+
+function renderWorkoutHistory() {
+  const items = getState().health.workouts.slice(0,20);
+  const el = document.getElementById('workout-history');
+  if (!el) return;
+  el.innerHTML = items.length ? items.map(w=>`
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:12px 16px;">
+      <div>
+        <span style="font-size:14px;font-weight:600;">${w.type}</span>
+        <span style="color:var(--muted);font-size:12px;margin-left:10px;">${w.duration} min · ${w.date}</span>
+        ${w.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px;">${w.notes}</div>`:''}
+      </div>
+      <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteWorkout('${w.id}')">✕</button>
+    </div>
+  `).join('') : '<div class="empty-state"><div class="empty-icon">💪</div>No workouts yet.</div>';
+}
+
+function deleteWorkout(id) {
+  setState(s=>{s.health.workouts=s.health.workouts.filter(w=>w.id!==id);return s;});
+  renderWorkoutHistory();
+}
+
+function logWeight() {
+  const kg = parseFloat(document.getElementById('wt-kg').value);
+  const date = document.getElementById('wt-date').value || today();
+  if (!kg) return alert('Enter weight');
+  setState(s=>{s.health.weight.push({id:uid(),kg,date});s.health.weight.sort((a,b)=>a.date.localeCompare(b.date));return s;});
+  document.getElementById('wt-kg').value='';
+  renderWeightChart();
+  showToast('Weight logged ✓');
+}
+
+function renderWeightChart() {
+  const entries = getState().health.weight.slice(-30);
+  const container = document.getElementById('weight-chart')?.parentElement;
+  if (!container) return;
+  if (!entries.length) {
+    container.innerHTML='<div class="empty-state"><div class="empty-icon">⚖️</div>Log weight entries to see chart.</div>';
+    return;
+  }
+  if (!container.querySelector('canvas')) {
+    container.innerHTML='<canvas id="weight-chart" height="100"></canvas>';
+  }
+  const ctx = document.getElementById('weight-chart');
+  if (weightChart) weightChart.destroy();
+  weightChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: entries.map(e=>e.date.slice(5)),
+      datasets: [{ label:'Weight (kg)', data: entries.map(e=>e.kg),
+        borderColor:'#e8900a', backgroundColor:'rgba(232,144,10,0.1)',
+        tension:0.3, pointBackgroundColor:'#f5c842', fill:true }]
+    },
+    options: { plugins:{legend:{labels:{color:'#fde8b0'}}}, scales:{x:{ticks:{color:'#c8840a'}},y:{ticks:{color:'#c8840a'}}} }
+  });
+}
+
+function logMeal() {
+  const type=document.getElementById('meal-type').value;
+  const date=document.getElementById('meal-date').value||today();
+  const text=document.getElementById('meal-text').value.trim();
+  if (!text) return alert('Enter what you ate');
+  setState(s=>{s.health.meals.unshift({id:uid(),type,date,text});return s;});
+  document.getElementById('meal-text').value='';
+  renderMealHistory();
+  showToast('Meal logged ✓');
+}
+
+function renderMealHistory() {
+  const items=getState().health.meals.slice(0,30);
+  const el=document.getElementById('meal-history');
+  if (!el) return;
+  el.innerHTML=items.length?items.map(m=>`
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:12px 16px;">
+      <div>
+        <span class="tag">${m.type}</span>
+        <span style="font-size:13px;margin-left:8px;">${m.text}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px;">${m.date}</span>
+      </div>
+      <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteMeal('${m.id}')">✕</button>
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">🍽️</div>No meals logged yet.</div>';
+}
+
+function deleteMeal(id){setState(s=>{s.health.meals=s.health.meals.filter(m=>m.id!==id);return s;});renderMealHistory();}
+
+function renderWater() {
+  const w = getState().health.water;
+  if (w.date !== today()) { setState(st=>{st.health.water={count:0,date:today()};return st;}); }
+  const count = getState().health.water.count;
+  const el = document.getElementById('water-display');
+  if (el) el.textContent = count;
+  const glassEl = document.getElementById('water-glasses');
+  if (glassEl) glassEl.innerHTML = Array.from({length:8},(_,i)=>
+    `<div style="font-size:28px;opacity:${i<count?1:0.25};transition:opacity 0.2s;">💧</div>`
+  ).join('');
+}
+
+function addWater(){
+  setState(s=>{if(s.health.water.date!==today())s.health.water={count:0,date:today()};s.health.water.count=Math.min(20,s.health.water.count+1);return s;});
+  renderWater();
+}
+function resetWater(){setState(s=>{s.health.water={count:0,date:today()};return s;});renderWater();}
+
+function initHealthDates(){
+  const t=today();
+  ['w-date','wt-date','meal-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
+}
+
+sectionRenderers['health'] = () => { initHealthDates(); switchHealthTab('workout'); };
 </script>
 
 </body>
