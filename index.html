@@ -1485,14 +1485,18 @@ function renderMilestones(){
   el.innerHTML=items.length?
     `<div style="position:relative;padding-left:24px;border-left:2px solid var(--border);">`+
     items.map(m=>`
-      <div style="margin-bottom:16px;position:relative;">
-        <div style="position:absolute;left:-33px;top:0;font-size:18px;">${m.emoji}</div>
-        <div style="font-size:11px;color:var(--muted);">${m.date}</div>
-        <div style="font-size:14px;">${m.desc}</div>
+      <div style="margin-bottom:16px;position:relative;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div style="position:absolute;left:-33px;top:0;font-size:18px;">${m.emoji}</div>
+          <div style="font-size:11px;color:var(--muted);">${m.date}</div>
+          <div style="font-size:14px;">${m.desc}</div>
+        </div>
+        <button class="btn" style="font-size:11px;padding:3px 8px;flex-shrink:0;" onclick="deleteMilestone('${m.id}')">✕</button>
       </div>
     `).join('')+`</div>`
   :'<div class="empty-state"><div class="empty-icon">⭐</div>No milestones yet. Record the special moments.</div>';
 }
+function deleteMilestone(id){setState(s=>{s.family.milestones=s.family.milestones.filter(m=>m.id!==id);return s;});renderMilestones();}
 
 function saveReminder(){
   const title=document.getElementById('rem-title').value.trim();
