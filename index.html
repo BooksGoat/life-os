@@ -684,11 +684,45 @@
 
       <!-- SETTINGS -->
       <section id="settings" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">⚙️</div>
-          Settings — coming in Task 12
+  <div class="section-title">⚙️ Settings</div>
+  <div class="card" style="margin-bottom:16px;max-width:600px;">
+    <div class="label" style="margin-bottom:12px;">API Keys</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label class="label">Google OAuth Client ID</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="s-google-id" placeholder="123456-abc.apps.googleusercontent.com" style="flex:1;">
+          <button class="btn btn-primary" onclick="saveSettings()">Save</button>
         </div>
-      </section>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Get from Google Cloud Console → APIs & Services → Credentials</div>
+      </div>
+      <div>
+        <label class="label">TMDB API Key (for movie posters)</label>
+        <input type="text" id="s-tmdb-key" placeholder="your_tmdb_api_key">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Free at themoviedb.org → Settings → API</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;max-width:600px;">
+    <div class="label" style="margin-bottom:12px;">Google Account</div>
+    <div id="google-auth-status" style="margin-bottom:12px;font-size:13px;color:var(--muted);">Not connected</div>
+    <button class="btn btn-primary" onclick="googleSignIn()">Connect Google Account</button>
+    <button class="btn" style="margin-left:8px;" onclick="googleSignOut()">Disconnect</button>
+  </div>
+
+  <div class="card" style="max-width:600px;">
+    <div class="label" style="margin-bottom:12px;">Data</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="syncToDrive()">↑ Sync to Google Drive</button>
+      <button class="btn" onclick="loadFromDrive()">↓ Load from Drive</button>
+      <button class="btn" onclick="exportLocal()">💾 Export JSON backup</button>
+      <button class="btn" onclick="importLocal()">📂 Import JSON backup</button>
+    </div>
+    <input type="file" id="local-import-file" accept=".json" style="display:none;" onchange="doImportLocal(this)">
+  </div>
+</section>
 
       <!-- SEARCH RESULTS -->
       <section id="search-results" class="section">
@@ -1649,6 +1683,187 @@ function globalSearch(q){
     </div>
   `).join('');
 }
+
+// ── SETTINGS ─────────────────────────────────────────────
+function renderSettings(){
+  const s=getState().settings;
+  const gid=document.getElementById('s-google-id');
+  const tmdb=document.getElementById('s-tmdb-key');
+  if(gid) gid.value=s.googleClientId||'';
+  if(tmdb) tmdb.value=s.tmdbKey||'';
+}
+
+function saveSettings(){
+  setState(s=>{
+    s.settings.googleClientId=document.getElementById('s-google-id').value.trim();
+    s.settings.tmdbKey=document.getElementById('s-tmdb-key').value.trim();
+    return s;
+  });
+  showToast('Settings saved ✓');
+  initGoogleAPI();
+}
+
+sectionRenderers['settings']=renderSettings;
+
+// ── GOOGLE API ───────────────────────────────────────────
+const SCOPES='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.readonly';
+const DISCOVERY_DOCS=[
+  'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+  'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
+];
+let gapiReady=false;
+let driveFileId=null;
+
+function initGoogleAPI(){
+  const clientId=getState().settings.googleClientId;
+  if(!clientId||!window.gapi) return;
+  gapi.load('client:auth2',async ()=>{
+    try {
+      await gapi.client.init({clientId,discoveryDocs:DISCOVERY_DOCS,scope:SCOPES});
+      gapiReady=true;
+      const isSignedIn=gapi.auth2.getAuthInstance().isSignedIn.get();
+      updateGoogleStatus(isSignedIn);
+      if(isSignedIn) loadCalendarEvents();
+    } catch(e){ console.warn('Google API init failed:',e); }
+  });
+}
+
+function updateGoogleStatus(signedIn){
+  const el=document.getElementById('google-auth-status');
+  if(!el) return;
+  if(signedIn){
+    const user=gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();
+    el.textContent=`Connected as ${user.getEmail()}`;
+    el.style.color='var(--gold)';
+  } else {
+    el.textContent='Not connected';
+    el.style.color='var(--muted)';
+  }
+}
+
+function googleSignIn(){
+  if(!gapiReady){alert('Save your Google Client ID in Settings first.');return;}
+  gapi.auth2.getAuthInstance().signIn().then(()=>{
+    updateGoogleStatus(true);
+    showToast('Google connected ✓');
+    loadCalendarEvents();
+  });
+}
+
+function googleSignOut(){
+  if(!gapiReady) return;
+  gapi.auth2.getAuthInstance().signOut().then(()=>updateGoogleStatus(false));
+}
+
+async function syncToDrive(){
+  if(!gapiReady||!gapi.auth2.getAuthInstance().isSignedIn.get()){
+    showToast('Connect Google account first');return;
+  }
+  const statusEl=document.getElementById('sync-status');
+  if(statusEl) statusEl.textContent='Syncing…';
+  const content=JSON.stringify(getState());
+  try {
+    if(driveFileId){
+      await gapi.client.request({path:`/upload/drive/v3/files/${driveFileId}`,method:'PATCH',
+        params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body:content});
+    } else {
+      const res=await gapi.client.drive.files.list({q:"name='lifeos-backup.json' and trashed=false",fields:'files(id)'});
+      driveFileId=res.result.files?.[0]?.id;
+      if(driveFileId){
+        await gapi.client.request({path:`/upload/drive/v3/files/${driveFileId}`,method:'PATCH',
+          params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body:content});
+      } else {
+        const meta=await gapi.client.drive.files.create({resource:{name:'lifeos-backup.json'},fields:'id'});
+        driveFileId=meta.result.id;
+        await gapi.client.request({path:`/upload/drive/v3/files/${driveFileId}`,method:'PATCH',
+          params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body:content});
+      }
+    }
+    if(statusEl) statusEl.textContent='Synced ✓ '+new Date().toLocaleTimeString();
+    showToast('Synced to Google Drive ✓');
+  } catch(e){
+    if(statusEl) statusEl.textContent='Sync failed';
+    alert('Sync error: '+e.message);
+  }
+}
+
+async function loadFromDrive(){
+  if(!gapiReady||!gapi.auth2.getAuthInstance().isSignedIn.get()){
+    showToast('Connect Google account first');return;
+  }
+  const statusEl=document.getElementById('sync-status');
+  if(statusEl) statusEl.textContent='Loading…';
+  try {
+    const res=await gapi.client.drive.files.list({q:"name='lifeos-backup.json' and trashed=false",fields:'files(id)'});
+    const fileId=res.result.files?.[0]?.id;
+    if(!fileId){showToast('No backup found in Drive');return;}
+    driveFileId=fileId;
+    const dl=await gapi.client.drive.files.get({fileId,alt:'media'});
+    localStorage.setItem(STORE_KEY,typeof dl.body==='string'?dl.body:JSON.stringify(dl.result));
+    if(statusEl) statusEl.textContent='Loaded ✓ '+new Date().toLocaleTimeString();
+    showToast('Loaded from Drive ✓ — reload sections to refresh');
+  } catch(e){
+    if(statusEl) statusEl.textContent='Load failed';
+    alert('Load error: '+e.message);
+  }
+}
+
+async function loadCalendarEvents(){
+  if(!gapiReady||!gapi.auth2.getAuthInstance().isSignedIn.get()) return;
+  const timeMin=new Date(); timeMin.setHours(0,0,0,0);
+  const timeMax=new Date(); timeMax.setDate(timeMax.getDate()+7);
+  try {
+    const res=await gapi.client.calendar.events.list({
+      calendarId:'primary', timeMin:timeMin.toISOString(), timeMax:timeMax.toISOString(),
+      singleEvents:true, orderBy:'startTime', maxResults:20
+    });
+    const events=res.result.items||[];
+    renderCalendarEvents(events);
+  } catch(e){ console.warn('Calendar error:',e); }
+}
+
+function renderCalendarEvents(events){
+  const todayEl=document.getElementById('today-calendar');
+  const famEl=document.getElementById('family-calendar-events');
+  const todayStr=today();
+  const todayEvents=events.filter(e=>{
+    const start=(e.start.dateTime||e.start.date||'').slice(0,10);
+    return start===todayStr;
+  });
+
+  const evHtml=(evs,limit)=>evs.slice(0,limit).map(e=>{
+    const start=e.start.dateTime?new Date(e.start.dateTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):e.start.date;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--gold);white-space:nowrap;">${start}</span>
+      <span style="font-size:13px;">${e.summary||'(no title)'}</span>
+    </div>`;
+  }).join('')||'<div style="color:var(--muted);font-size:13px;">No events today.</div>';
+
+  if(todayEl) todayEl.innerHTML=evHtml(todayEvents,5);
+  if(famEl) famEl.innerHTML=evHtml(events,20);
+}
+
+function exportLocal(){
+  const blob=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`lifeos-backup-${today()}.json`; a.click();
+}
+function importLocal(){document.getElementById('local-import-file').click();}
+function doImportLocal(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      localStorage.setItem(STORE_KEY,JSON.stringify(data));
+      showToast('Data imported ✓ — reload page');
+    } catch(err){alert('Invalid file: '+err.message);}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
 </script>
 
 </body>
