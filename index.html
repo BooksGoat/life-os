@@ -24,6 +24,7 @@
       --amber-15: rgba(232,144,10,0.15);
       --amber-40: rgba(232,144,10,0.4);
       --amber-dark: #c87020;
+      --gold-8: rgba(245,200,66,0.08);
     }
 
     /* ─── BASE ──────────────────────────────────────────────────── */
@@ -257,7 +258,7 @@
 
     .btn:hover {
       border-color: var(--amber);
-      background: rgba(232,144,10,0.15);
+      background: var(--amber-15);
     }
 
     .btn-primary {
@@ -637,6 +638,7 @@
       <textarea id="fam-note-text" rows="3" placeholder="Write a note…" style="resize:none;width:100%;margin-bottom:10px;"></textarea>
       <button class="btn btn-primary" onclick="saveFamNote()">Save Note</button>
     </div>
+    <input type="search" id="fam-note-search" placeholder="Search notes…" oninput="renderFamNotes()" style="width:100%;margin-bottom:12px;">
     <div id="fam-notes-list"></div>
   </div>
   <div id="fam-panel-milestones" class="hidden">
@@ -1394,7 +1396,7 @@ function renderBooks() {
   const crEl=document.getElementById('currently-reading');
   if(crEl){
     crEl.innerHTML=reading.length?`
-      <div style="background:radial-gradient(ellipse at left,rgba(245,200,66,0.08),transparent 60%);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;">
+      <div style="background:radial-gradient(ellipse at left,var(--gold-8),transparent 60%);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;">
         ${reading[0].cover?`<img src="${reading[0].cover}" style="height:80px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.4);">`:'<div style="font-size:40px;">📖</div>'}
         <div>
           <div style="font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;">CURRENTLY READING</div>
@@ -1422,6 +1424,10 @@ function renderBooks() {
         <select onchange="updateBookStatus('${b.id}',this.value)" style="width:100%;font-size:11px;padding:4px;margin:6px 0;">
           ${['Want to Read','Reading','Done'].map(s=>`<option ${b.status===s?'selected':''}>${s}</option>`).join('')}
         </select>
+        <div style="margin:4px 0;font-size:18px;line-height:1;">
+          ${[1,2,3,4,5].map(n=>`<span style="cursor:pointer;color:${n<=(b.rating||0)?'var(--gold)':'var(--border)'};" onclick="updateBookRating('${b.id}',${n})">★</span>`).join('')}
+        </div>
+        <textarea rows="2" placeholder="Notes…" style="width:100%;font-size:11px;padding:4px;resize:none;margin:4px 0;background:transparent;color:var(--text);border:1px solid var(--border);border-radius:6px;" onchange="updateBookNotes('${b.id}',this.value)">${b.notes||''}</textarea>
         <button class="btn" style="font-size:11px;padding:3px 8px;width:100%;" onclick="deleteBook('${b.id}')">Remove</button>
       </div>
     </div>
@@ -1433,6 +1439,8 @@ function updateBookStatus(id,status){
   renderBooks();
 }
 function deleteBook(id){setState(s=>{s.books=s.books.filter(b=>b.id!==id);return s;});renderBooks();}
+function updateBookRating(id,rating){setState(s=>{const b=s.books.find(b=>b.id===id);if(b)b.rating=rating;return s;});renderBooks();}
+function updateBookNotes(id,notes){setState(s=>{const b=s.books.find(b=>b.id===id);if(b)b.notes=notes;return s;});}
 
 sectionRenderers['books']=renderBooks;
 
@@ -1456,7 +1464,8 @@ function saveFamNote(){
 }
 
 function renderFamNotes(){
-  const items=getState().family.notes;
+  const q=(document.getElementById('fam-note-search')?.value||'').toLowerCase();
+  const items=getState().family.notes.filter(n=>!q||n.text.toLowerCase().includes(q));
   const el=document.getElementById('fam-notes-list'); if(!el) return;
   el.innerHTML=items.length?items.map(n=>`
     <div class="card" style="margin-bottom:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;">
@@ -1567,7 +1576,7 @@ function deleteIdea(id){
 
 function ideaCard(idea){
   return `
-    <div class="card" style="margin-bottom:10px;padding:14px 18px;${idea.pinned?'border-color:var(--amber);background:rgba(232,144,10,0.06);':''}">
+    <div class="card" style="margin-bottom:10px;padding:14px 18px;${idea.pinned?'border-color:var(--amber);background:var(--panel);':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div style="flex:1;white-space:pre-wrap;font-size:14px;">${idea.text}</div>
         <div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px;">
@@ -1612,6 +1621,8 @@ function globalSearch(q){
     .forEach(r=>results.push({section:'🍳 Recipes',title:r.title,sub:r.cuisine||'',action:`navigate('recipes')`}));
   state.watch.movies.filter(m=>m.title.toLowerCase().includes(lq))
     .forEach(m=>results.push({section:'📺 Movies',title:m.title,sub:m.status,action:`navigate('watch')`}));
+  state.watch.youtube.filter(v=>v.title.toLowerCase().includes(lq))
+    .forEach(v=>results.push({section:'📺 YouTube',title:v.title,sub:'',action:`navigate('watch')`}));
   state.books.filter(b=>b.title.toLowerCase().includes(lq)||(b.author||'').toLowerCase().includes(lq))
     .forEach(b=>results.push({section:'📚 Books',title:b.title,sub:b.author||'',action:`navigate('books')`}));
   state.ideas.filter(i=>i.text.toLowerCase().includes(lq)||(i.tags||[]).join(' ').toLowerCase().includes(lq))
