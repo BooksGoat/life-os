@@ -423,11 +423,40 @@
 
       <!-- RECIPES -->
       <section id="recipes" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">🍳</div>
-          Recipes — coming in Task 5
-        </div>
-      </section>
+  <div class="section-title">🍳 Recipes</div>
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="recipe-search" placeholder="Search recipes…" style="width:240px;" oninput="renderRecipes()">
+    <select id="recipe-filter-cuisine" onchange="renderRecipes()" style="width:140px;">
+      <option value="">All cuisines</option>
+      <option>Indian</option><option>Italian</option><option>Chinese</option>
+      <option>Mexican</option><option>American</option><option>Other</option>
+    </select>
+    <select id="recipe-filter-meal" onchange="renderRecipes()" style="width:140px;">
+      <option value="">All meals</option>
+      <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
+    </select>
+    <label class="btn" style="cursor:pointer;">
+      📥 Import JSON
+      <input type="file" accept=".json" style="display:none;" onchange="importRecipeJSON(this)">
+    </label>
+    <button class="btn btn-primary" onclick="showAddRecipe()">+ Add Recipe</button>
+  </div>
+  <div id="recipe-add-form" class="card hidden" style="margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+      <input type="text" id="r-title" placeholder="Recipe title *">
+      <input type="text" id="r-url" placeholder="URL (optional)">
+      <input type="text" id="r-thumb" placeholder="Thumbnail URL (optional)">
+      <select id="r-cuisine"><option value="">Cuisine</option><option>Indian</option><option>Italian</option><option>Chinese</option><option>Mexican</option><option>American</option><option>Other</option></select>
+      <select id="r-meal"><option value="">Meal type</option><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+      <input type="text" id="r-tags" placeholder="Tags (comma-separated)">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" onclick="saveRecipe()">Save</button>
+      <button class="btn" onclick="document.getElementById('recipe-add-form').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+  <div id="recipe-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
+</section>
 
       <!-- WATCH -->
       <section id="watch" class="section">
@@ -644,6 +673,106 @@ function showToast(msg) {
 
 sectionRenderers['today'] = renderToday;
 renderToday();
+
+// ── RECIPES ──────────────────────────────────────────────
+const RECIPE_KEYWORDS = ['recipe','cook','how to make','homemade','bake','fry','grill','roast','curry','biryani','pasta','soup'];
+
+function renderRecipes() {
+  const state = getState();
+  const q = (document.getElementById('recipe-search')?.value || '').toLowerCase();
+  const cuisine = document.getElementById('recipe-filter-cuisine')?.value || '';
+  const meal = document.getElementById('recipe-filter-meal')?.value || '';
+
+  let items = state.recipes.filter(r => {
+    if (q && !r.title.toLowerCase().includes(q) && !(r.tags||[]).join(' ').toLowerCase().includes(q)) return false;
+    if (cuisine && r.cuisine !== cuisine) return false;
+    if (meal && r.meal !== meal) return false;
+    return true;
+  });
+
+  const grid = document.getElementById('recipe-grid');
+  if (!grid) return;
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🍳</div>No recipes yet. Import from Google Takeout JSON or add manually.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(r => `
+    <div class="card" style="overflow:hidden;padding:0;">
+      ${r.thumb ? `<img src="${r.thumb}" style="width:100%;height:130px;object-fit:cover;" onerror="this.style.display='none'">` : `<div style="height:80px;background:radial-gradient(ellipse at center,rgba(232,144,10,0.2),transparent);display:flex;align-items:center;justify-content:center;font-size:36px;">🍳</div>`}
+      <div style="padding:12px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.3;">${r.title}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${r.source||''} ${r.cuisine ? '· '+r.cuisine : ''} ${r.meal ? '· '+r.meal : ''}</div>
+        <div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          ${r.url ? `<a href="${r.url}" target="_blank" class="btn" style="font-size:11px;padding:4px 10px;text-decoration:none;">▶ Watch</a>` : ''}
+          <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="deleteRecipe('${r.id}')">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showAddRecipe() {
+  document.getElementById('recipe-add-form').classList.remove('hidden');
+}
+
+function saveRecipe() {
+  const title = document.getElementById('r-title').value.trim();
+  if (!title) return alert('Title required');
+  const recipe = {
+    id: uid(), title,
+    url: document.getElementById('r-url').value.trim(),
+    thumb: document.getElementById('r-thumb').value.trim(),
+    cuisine: document.getElementById('r-cuisine').value,
+    meal: document.getElementById('r-meal').value,
+    tags: document.getElementById('r-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    source: 'manual', date: new Date().toISOString()
+  };
+  setState(s => { s.recipes.unshift(recipe); return s; });
+  document.getElementById('recipe-add-form').classList.add('hidden');
+  ['r-title','r-url','r-thumb','r-tags'].forEach(id => document.getElementById(id).value = '');
+  renderRecipes();
+  showToast('Recipe saved ✓');
+}
+
+function deleteRecipe(id) {
+  if (!confirm('Delete this recipe?')) return;
+  setState(s => { s.recipes = s.recipes.filter(r => r.id !== id); return s; });
+  renderRecipes();
+}
+
+function importRecipeJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const raw = JSON.parse(e.target.result);
+      const items = Array.isArray(raw) ? raw : raw.videos ? raw.videos : raw.items ? raw.items : [];
+      const existing = getState().recipes.map(r => r.url).filter(Boolean);
+      const recipes = items
+        .filter(item => {
+          const title = (item.title || item.snippet?.title || '').toLowerCase();
+          return RECIPE_KEYWORDS.some(k => title.includes(k));
+        })
+        .map(item => {
+          const title = item.title || item.snippet?.title || 'Untitled';
+          const videoId = item.contentDetails?.videoId || '';
+          const url = item.titleUrl || (videoId ? `https://youtube.com/watch?v=${videoId}` : '');
+          const thumb = item.snippet?.thumbnails?.medium?.url || '';
+          return { id: uid(), title, url, thumb, source: 'youtube', cuisine: '', meal: '', tags: ['recipe'], date: item.time || new Date().toISOString() };
+        })
+        .filter(r => !r.url || !existing.includes(r.url));
+      setState(s => { s.recipes = [...recipes, ...s.recipes]; return s; });
+      renderRecipes();
+      showToast(`Imported ${recipes.length} recipes ✓`);
+    } catch(err) { alert('Could not parse JSON: ' + err.message); }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+sectionRenderers['recipes'] = renderRecipes;
 </script>
 
 </body>
