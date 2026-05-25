@@ -379,6 +379,7 @@
         placeholder="Search everything…"
         autocomplete="off"
         spellcheck="false"
+        oninput="globalSearch(this.value)"
       />
       <div class="header-actions">
         <button class="hdr-btn" id="btn-sync">Sync ↑</button>
@@ -603,27 +604,81 @@
 
       <!-- BOOKS -->
       <section id="books" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">📚</div>
-          Books — coming in Task 9
-        </div>
-      </section>
+  <div class="section-title">📚 Books</div>
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <input type="text" id="book-search-input" placeholder="Search by title or author…" style="width:260px;" oninput="renderBooks()">
+    <select id="book-filter-status" onchange="renderBooks()" style="width:160px;">
+      <option value="">All statuses</option>
+      <option>Want to Read</option><option>Reading</option><option>Done</option>
+    </select>
+    <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+      <input type="text" id="book-add-input" placeholder="Book title to add…" style="width:220px;">
+      <button class="btn btn-primary" onclick="addBook()">+ Add</button>
+    </div>
+  </div>
+  <div id="currently-reading" style="margin-bottom:20px;"></div>
+  <div id="books-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;"></div>
+</section>
 
       <!-- FAMILY -->
       <section id="family" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">👨‍👩‍👧</div>
-          Family — coming in Task 10
-        </div>
-      </section>
+  <div class="section-title">👨‍👩‍👧 Family</div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button class="btn btn-primary" id="fam-tab-calendar" onclick="switchFamTab('calendar')">Calendar</button>
+    <button class="btn" id="fam-tab-notes" onclick="switchFamTab('notes')">Notes</button>
+    <button class="btn" id="fam-tab-milestones" onclick="switchFamTab('milestones')">Milestones</button>
+    <button class="btn" id="fam-tab-reminders" onclick="switchFamTab('reminders')">Reminders</button>
+  </div>
+  <div id="fam-panel-calendar">
+    <div id="family-calendar-events"><div style="color:var(--muted);font-size:13px;">Connect Google Calendar in Settings to see events here.</div></div>
+  </div>
+  <div id="fam-panel-notes" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <textarea id="fam-note-text" rows="3" placeholder="Write a note…" style="resize:none;width:100%;margin-bottom:10px;"></textarea>
+      <button class="btn btn-primary" onclick="saveFamNote()">Save Note</button>
+    </div>
+    <div id="fam-notes-list"></div>
+  </div>
+  <div id="fam-panel-milestones" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end;">
+        <div><label class="label">Date</label><input type="date" id="ms-date"></div>
+        <div><label class="label">Emoji</label><input type="text" id="ms-emoji" placeholder="🎂" style="width:80px;"></div>
+        <div><label class="label">Description</label><input type="text" id="ms-desc" placeholder="First day of school…"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="saveMilestone()">Add Milestone</button>
+    </div>
+    <div id="milestones-list"></div>
+  </div>
+  <div id="fam-panel-reminders" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:end;">
+        <div><label class="label">What</label><input type="text" id="rem-title" placeholder="Doctor appointment…"></div>
+        <div><label class="label">When</label><input type="datetime-local" id="rem-when"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="saveReminder()">Set Reminder</button>
+    </div>
+    <div id="reminders-list"></div>
+  </div>
+</section>
 
       <!-- IDEAS -->
       <section id="ideas" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">💡</div>
-          Ideas — coming in Task 11
-        </div>
-      </section>
+  <div class="section-title">💡 Ideas</div>
+  <div class="card" style="margin-bottom:20px;">
+    <textarea id="idea-input" rows="3" placeholder="Capture an idea… (Ctrl+Enter to save)" style="resize:none;width:100%;margin-bottom:10px;"
+      onkeydown="if(event.ctrlKey&&event.key==='Enter')saveIdea()"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <input type="text" id="idea-tags" placeholder="Tags (comma-separated)" style="flex:1;">
+      <button class="btn btn-primary" onclick="saveIdea()">Save</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px;">
+    <input type="text" id="idea-search" placeholder="Search ideas…" style="width:260px;" oninput="renderIdeas()">
+  </div>
+  <div id="ideas-pinned" style="margin-bottom:16px;"></div>
+  <div id="ideas-list"></div>
+</section>
 
       <!-- SETTINGS -->
       <section id="settings" class="section">
@@ -635,11 +690,9 @@
 
       <!-- SEARCH RESULTS -->
       <section id="search-results" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          Search results will appear here
-        </div>
-      </section>
+  <div class="section-title">🔍 Search Results</div>
+  <div id="search-output"></div>
+</section>
 
     </main><!-- #content -->
   </div><!-- #main -->
@@ -1306,6 +1359,280 @@ function renderGratitude() {
 }
 
 sectionRenderers['mind'] = () => { switchMindTab('timer'); updateTimerDisplay(); };
+
+// ── BOOKS ────────────────────────────────────────────────
+async function addBook() {
+  const title = document.getElementById('book-add-input').value.trim();
+  if (!title) return;
+  let book = { id: uid(), title, status: 'Want to Read', rating: 0, notes: '', date: new Date().toISOString() };
+  try {
+    const res = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(title)}&limit=1`);
+    const data = await res.json();
+    const hit = data.docs?.[0];
+    if (hit) {
+      book.title = hit.title;
+      book.author = hit.author_name?.[0] || '';
+      book.year = hit.first_publish_year || '';
+      book.pages = hit.number_of_pages_median || '';
+      book.cover = hit.cover_i ? `https://covers.openlibrary.org/b/id/${hit.cover_i}-M.jpg` : '';
+      book.olid = hit.key || '';
+    }
+  } catch(e) {}
+  setState(s=>{s.books.unshift(book);return s;});
+  document.getElementById('book-add-input').value='';
+  renderBooks();
+  showToast(`Added: ${book.title} ✓`);
+}
+
+function renderBooks() {
+  const state=getState();
+  const q=(document.getElementById('book-search-input')?.value||'').toLowerCase();
+  const statusFilter=document.getElementById('book-filter-status')?.value||'';
+
+  const reading=state.books.filter(b=>b.status==='Reading');
+  const crEl=document.getElementById('currently-reading');
+  if(crEl){
+    crEl.innerHTML=reading.length?`
+      <div style="background:radial-gradient(ellipse at left,rgba(245,200,66,0.08),transparent 60%);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;">
+        ${reading[0].cover?`<img src="${reading[0].cover}" style="height:80px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.4);">`:'<div style="font-size:40px;">📖</div>'}
+        <div>
+          <div style="font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;">CURRENTLY READING</div>
+          <div style="font-size:17px;font-weight:700;">${reading[0].title}</div>
+          ${reading[0].author?`<div style="color:var(--muted);font-size:13px;">${reading[0].author}</div>`:''}
+        </div>
+      </div>
+    `:'';
+  }
+
+  const items=state.books.filter(b=>{
+    if(q && !b.title.toLowerCase().includes(q) && !(b.author||'').toLowerCase().includes(q)) return false;
+    if(statusFilter && b.status!==statusFilter) return false;
+    return true;
+  });
+
+  const grid=document.getElementById('books-grid'); if(!grid) return;
+  grid.innerHTML=items.length?items.map(b=>`
+    <div class="card" style="padding:0;overflow:hidden;">
+      ${b.cover?`<img src="${b.cover}" style="width:100%;height:200px;object-fit:cover;">`:
+        `<div style="height:160px;background:radial-gradient(ellipse,rgba(232,144,10,0.15),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">📚</div>`}
+      <div style="padding:10px;">
+        <div style="font-size:13px;font-weight:600;line-height:1.3;">${b.title}</div>
+        ${b.author?`<div style="font-size:11px;color:var(--muted);margin:3px 0;">${b.author}${b.year?' · '+b.year:''}</div>`:''}
+        <select onchange="updateBookStatus('${b.id}',this.value)" style="width:100%;font-size:11px;padding:4px;margin:6px 0;">
+          ${['Want to Read','Reading','Done'].map(s=>`<option ${b.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn" style="font-size:11px;padding:3px 8px;width:100%;" onclick="deleteBook('${b.id}')">Remove</button>
+      </div>
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">📚</div>No books yet. Type a title and click Add.</div>';
+}
+
+function updateBookStatus(id,status){
+  setState(s=>{const b=s.books.find(b=>b.id===id);if(b)b.status=status;return s;});
+  renderBooks();
+}
+function deleteBook(id){setState(s=>{s.books=s.books.filter(b=>b.id!==id);return s;});renderBooks();}
+
+sectionRenderers['books']=renderBooks;
+
+// ── FAMILY ───────────────────────────────────────────────
+function switchFamTab(tab){
+  ['calendar','notes','milestones','reminders'].forEach(t=>{
+    document.getElementById(`fam-panel-${t}`).classList.toggle('hidden',t!==tab);
+    document.getElementById(`fam-tab-${t}`).className='btn'+(t===tab?' btn-primary':'');
+  });
+  if(tab==='notes') renderFamNotes();
+  if(tab==='milestones') renderMilestones();
+  if(tab==='reminders') renderReminders();
+}
+
+function saveFamNote(){
+  const text=document.getElementById('fam-note-text').value.trim();
+  if(!text) return;
+  setState(s=>{s.family.notes.unshift({id:uid(),text,date:new Date().toISOString()});return s;});
+  document.getElementById('fam-note-text').value='';
+  renderFamNotes(); showToast('Note saved ✓');
+}
+
+function renderFamNotes(){
+  const items=getState().family.notes;
+  const el=document.getElementById('fam-notes-list'); if(!el) return;
+  el.innerHTML=items.length?items.map(n=>`
+    <div class="card" style="margin-bottom:8px;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:13px;white-space:pre-wrap;">${n.text}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">${new Date(n.date).toLocaleDateString()}</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:3px 8px;flex-shrink:0;margin-left:10px;" onclick="deleteFamNote('${n.id}')">✕</button>
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">📝</div>No notes yet.</div>';
+}
+function deleteFamNote(id){setState(s=>{s.family.notes=s.family.notes.filter(n=>n.id!==id);return s;});renderFamNotes();}
+
+function saveMilestone(){
+  const date=document.getElementById('ms-date').value;
+  const emoji=document.getElementById('ms-emoji').value.trim()||'⭐';
+  const desc=document.getElementById('ms-desc').value.trim();
+  if(!desc||!date) return alert('Date and description required');
+  setState(s=>{s.family.milestones.push({id:uid(),date,emoji,desc});s.family.milestones.sort((a,b)=>b.date.localeCompare(a.date));return s;});
+  document.getElementById('ms-desc').value=''; document.getElementById('ms-emoji').value='';
+  renderMilestones(); showToast('Milestone saved ✓');
+}
+
+function renderMilestones(){
+  const items=getState().family.milestones;
+  const el=document.getElementById('milestones-list'); if(!el) return;
+  el.innerHTML=items.length?
+    `<div style="position:relative;padding-left:24px;border-left:2px solid var(--border);">`+
+    items.map(m=>`
+      <div style="margin-bottom:16px;position:relative;">
+        <div style="position:absolute;left:-33px;top:0;font-size:18px;">${m.emoji}</div>
+        <div style="font-size:11px;color:var(--muted);">${m.date}</div>
+        <div style="font-size:14px;">${m.desc}</div>
+      </div>
+    `).join('')+`</div>`
+  :'<div class="empty-state"><div class="empty-icon">⭐</div>No milestones yet. Record the special moments.</div>';
+}
+
+function saveReminder(){
+  const title=document.getElementById('rem-title').value.trim();
+  const when=document.getElementById('rem-when').value;
+  if(!title||!when) return alert('Title and time required');
+  const rem={id:uid(),title,when,date:new Date().toISOString()};
+  setState(s=>{s.family.reminders.push(rem);return s;});
+  scheduleNotification(rem);
+  document.getElementById('rem-title').value='';
+  renderReminders(); showToast('Reminder set ✓');
+}
+
+function scheduleNotification(rem){
+  const msUntil=new Date(rem.when).getTime()-Date.now();
+  if(msUntil<=0) return;
+  if('Notification' in window){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){
+        setTimeout(()=>new Notification('Life OS Reminder',{body:rem.title}),msUntil);
+      }
+    });
+  }
+}
+
+function renderReminders(){
+  const items=getState().family.reminders
+    .filter(r=>new Date(r.when)>new Date())
+    .sort((a,b)=>a.when.localeCompare(b.when));
+  const el=document.getElementById('reminders-list'); if(!el) return;
+  el.innerHTML=items.length?items.map(r=>`
+    <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">🔔 ${r.title}</div>
+        <div style="font-size:12px;color:var(--muted);">${new Date(r.when).toLocaleString()}</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteReminder('${r.id}')">✕</button>
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">🔔</div>No upcoming reminders.</div>';
+}
+function deleteReminder(id){setState(s=>{s.family.reminders=s.family.reminders.filter(r=>r.id!==id);return s;});renderReminders();}
+
+function initFamilyDates(){const t=today();const el=document.getElementById('ms-date');if(el)el.value=t;}
+
+sectionRenderers['family']=()=>{initFamilyDates();switchFamTab('calendar');};
+
+// ── IDEAS ────────────────────────────────────────────────
+function saveIdea(){
+  const text=document.getElementById('idea-input').value.trim();
+  if(!text) return;
+  const tags=document.getElementById('idea-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  setState(s=>{s.ideas.unshift({id:uid(),text,tags,pinned:false,date:new Date().toISOString()});return s;});
+  document.getElementById('idea-input').value='';
+  document.getElementById('idea-tags').value='';
+  renderIdeas(); showToast('Idea saved ✓');
+}
+
+function togglePin(id){
+  setState(s=>{const i=s.ideas.find(i=>i.id===id);if(i)i.pinned=!i.pinned;return s;});
+  renderIdeas();
+}
+
+function deleteIdea(id){
+  if(!confirm('Delete this idea?')) return;
+  setState(s=>{s.ideas=s.ideas.filter(i=>i.id!==id);return s;});
+  renderIdeas();
+}
+
+function ideaCard(idea){
+  return `
+    <div class="card" style="margin-bottom:10px;padding:14px 18px;${idea.pinned?'border-color:var(--amber);background:rgba(232,144,10,0.06);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="flex:1;white-space:pre-wrap;font-size:14px;">${idea.text}</div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px;">
+          <button class="btn" style="font-size:14px;padding:3px 8px;" title="${idea.pinned?'Unpin':'Pin'}" onclick="togglePin('${idea.id}')">${idea.pinned?'📌':'📍'}</button>
+          <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteIdea('${idea.id}')">✕</button>
+        </div>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        ${(idea.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+        <span style="font-size:10px;color:var(--muted);margin-left:auto;">${new Date(idea.date).toLocaleDateString()}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderIdeas(){
+  const q=(document.getElementById('idea-search')?.value||'').toLowerCase();
+  const all=getState().ideas.filter(i=>!q||i.text.toLowerCase().includes(q)||(i.tags||[]).join(' ').toLowerCase().includes(q));
+  const pinned=all.filter(i=>i.pinned);
+  const rest=all.filter(i=>!i.pinned);
+
+  const pinnedEl=document.getElementById('ideas-pinned'); if(!pinnedEl) return;
+  pinnedEl.innerHTML=pinned.length?
+    `<div style="font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">PINNED</div>`+pinned.map(ideaCard).join(''):'';
+
+  const listEl=document.getElementById('ideas-list'); if(!listEl) return;
+  listEl.innerHTML=rest.length?rest.map(ideaCard).join(''):'<div class="empty-state"><div class="empty-icon">💡</div>No ideas yet. Write one above.</div>';
+}
+
+sectionRenderers['ideas']=renderIdeas;
+
+// ── GLOBAL SEARCH ────────────────────────────────────────
+function globalSearch(q){
+  if(!q.trim()){ navigate('today'); return; }
+  navigate('search-results');
+
+  const state=getState();
+  const lq=q.toLowerCase();
+  const results=[];
+
+  state.recipes.filter(r=>r.title.toLowerCase().includes(lq)||(r.tags||[]).join(' ').toLowerCase().includes(lq))
+    .forEach(r=>results.push({section:'🍳 Recipes',title:r.title,sub:r.cuisine||'',action:`navigate('recipes')`}));
+  state.watch.movies.filter(m=>m.title.toLowerCase().includes(lq))
+    .forEach(m=>results.push({section:'📺 Movies',title:m.title,sub:m.status,action:`navigate('watch')`}));
+  state.books.filter(b=>b.title.toLowerCase().includes(lq)||(b.author||'').toLowerCase().includes(lq))
+    .forEach(b=>results.push({section:'📚 Books',title:b.title,sub:b.author||'',action:`navigate('books')`}));
+  state.ideas.filter(i=>i.text.toLowerCase().includes(lq)||(i.tags||[]).join(' ').toLowerCase().includes(lq))
+    .forEach(i=>results.push({section:'💡 Ideas',title:i.text.slice(0,80),sub:(i.tags||[]).join(', '),action:`navigate('ideas')`}));
+  state.mind.bookmarks.filter(b=>(b.note||'').toLowerCase().includes(lq))
+    .forEach(b=>results.push({section:'🧘 Spiritual',title:b.note,sub:b.url,action:`navigate('mind')`}));
+  state.family.notes.filter(n=>n.text.toLowerCase().includes(lq))
+    .forEach(n=>results.push({section:'👨‍👩‍👧 Family',title:n.text.slice(0,80),sub:'',action:`navigate('family')`}));
+  state.health.workouts.filter(w=>(w.notes||'').toLowerCase().includes(lq))
+    .forEach(w=>results.push({section:'💪 Health',title:`${w.type} · ${w.duration}min`,sub:w.date,action:`navigate('health')`}));
+
+  const el=document.getElementById('search-output'); if(!el) return;
+  if(!results.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div>No results for "${q}"</div>`;
+    return;
+  }
+  el.innerHTML=results.map(r=>`
+    <div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 16px;" onclick="${r.action}">
+      <span class="tag">${r.section}</span>
+      <div>
+        <div style="font-size:14px;">${r.title}</div>
+        ${r.sub?`<div style="font-size:11px;color:var(--muted);">${r.sub}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
 </script>
 
 </body>
