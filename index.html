@@ -827,6 +827,7 @@ function saveQuickNote() {
   if (!text) return;
   setState(s => { s.ideas.unshift({ id: uid(), text, tags: [], pinned: false, date: new Date().toISOString() }); return s; });
   document.getElementById('quick-note').value = '';
+  if (typeof renderIdeas === 'function') renderIdeas();
   showToast('Saved to Ideas ✓');
 }
 
