@@ -1694,9 +1694,12 @@ function renderSettings(){
 }
 
 function saveSettings(){
+  const gid=document.getElementById('s-google-id');
+  const tmdb=document.getElementById('s-tmdb-key');
+  if(!gid||!tmdb) return;
   setState(s=>{
-    s.settings.googleClientId=document.getElementById('s-google-id').value.trim();
-    s.settings.tmdbKey=document.getElementById('s-tmdb-key').value.trim();
+    s.settings.googleClientId=gid.value.trim();
+    s.settings.tmdbKey=tmdb.value.trim();
     return s;
   });
   showToast('Settings saved ✓');
@@ -1799,7 +1802,9 @@ async function loadFromDrive(){
     if(!fileId){showToast('No backup found in Drive');return;}
     driveFileId=fileId;
     const dl=await gapi.client.drive.files.get({fileId,alt:'media'});
-    localStorage.setItem(STORE_KEY,typeof dl.body==='string'?dl.body:JSON.stringify(dl.result));
+    const raw=typeof dl.body==='string'?dl.body:(dl.result?JSON.stringify(dl.result):null);
+    if(!raw){showToast('Drive backup appears empty');return;}
+    localStorage.setItem(STORE_KEY,raw);
     if(statusEl) statusEl.textContent='Loaded ✓ '+new Date().toLocaleTimeString();
     showToast('Loaded from Drive ✓ — reload sections to refresh');
   } catch(e){
