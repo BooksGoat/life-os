@@ -548,11 +548,58 @@
 
       <!-- MIND -->
       <section id="mind" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">🧠</div>
-          Mind — coming in Task 8
-        </div>
-      </section>
+  <div class="section-title">🧘 Mind</div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button class="btn btn-primary" id="mind-tab-timer" onclick="switchMindTab('timer')">Timer</button>
+    <button class="btn" id="mind-tab-log" onclick="switchMindTab('log')">Sessions</button>
+    <button class="btn" id="mind-tab-spiritual" onclick="switchMindTab('spiritual')">Spiritual</button>
+    <button class="btn" id="mind-tab-gratitude" onclick="switchMindTab('gratitude')">Gratitude</button>
+  </div>
+  <div id="mind-panel-timer">
+    <div class="card" style="text-align:center;padding:48px 32px;max-width:420px;margin:0 auto;">
+      <div id="timer-display" style="font-size:72px;font-weight:700;color:var(--gold);letter-spacing:-2px;margin-bottom:16px;">20:00</div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+        <button class="btn" onclick="setTimer(5)">5m</button>
+        <button class="btn" onclick="setTimer(10)">10m</button>
+        <button class="btn" onclick="setTimer(15)">15m</button>
+        <button class="btn" onclick="setTimer(20)">20m</button>
+        <button class="btn" onclick="setTimer(30)">30m</button>
+        <input type="number" id="custom-timer" placeholder="min" style="width:70px;text-align:center;">
+        <button class="btn" onclick="setTimer(parseInt(document.getElementById('custom-timer').value)||20)">Set</button>
+      </div>
+      <div style="display:flex;justify-content:center;gap:12px;">
+        <button class="btn btn-primary" style="font-size:16px;padding:12px 28px;" id="timer-start-btn" onclick="startTimer()">▶ Start</button>
+        <button class="btn" style="font-size:16px;padding:12px 28px;" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div id="timer-note" style="margin-top:20px;color:var(--muted);font-size:13px;"></div>
+    </div>
+  </div>
+  <div id="mind-panel-log" class="hidden">
+    <div id="mind-session-list"></div>
+  </div>
+  <div id="mind-panel-spiritual" class="hidden">
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:12px;align-items:end;">
+        <div><label class="label">URL</label><input type="text" id="sp-url" placeholder="https://…"></div>
+        <div><label class="label">Title + Note</label><input type="text" id="sp-note" placeholder="What is this about?"></div>
+        <button class="btn btn-primary" onclick="saveSpiritual()">Save</button>
+      </div>
+    </div>
+    <div id="spiritual-list"></div>
+  </div>
+  <div id="mind-panel-gratitude" class="hidden">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="label" style="margin-bottom:12px;">Today I am grateful for…</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input type="text" id="g1" placeholder="1. ">
+        <input type="text" id="g2" placeholder="2. ">
+        <input type="text" id="g3" placeholder="3. ">
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="saveGratitude()">Save Entry</button>
+    </div>
+    <div id="gratitude-list"></div>
+  </div>
+</section>
 
       <!-- BOOKS -->
       <section id="books" class="section">
@@ -1116,6 +1163,149 @@ function initHealthDates(){
 }
 
 sectionRenderers['health'] = () => { initHealthDates(); switchHealthTab('workout'); };
+
+// ── MIND ────────────────────────────────────────────────
+let timerSeconds = 20 * 60;
+let timerInterval = null;
+let timerRunning = false;
+let timerOriginal = 20 * 60;
+
+function switchMindTab(tab) {
+  ['timer','log','spiritual','gratitude'].forEach(t=>{
+    document.getElementById(`mind-panel-${t}`).classList.toggle('hidden',t!==tab);
+    document.getElementById(`mind-tab-${t}`).className='btn'+(t===tab?' btn-primary':'');
+  });
+  if (tab==='log') renderMindLog();
+  if (tab==='spiritual') renderSpiritual();
+  if (tab==='gratitude') renderGratitude();
+}
+
+function setTimer(minutes) {
+  if (timerRunning) return;
+  timerSeconds = minutes * 60;
+  timerOriginal = timerSeconds;
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s = (timerSeconds%60).toString().padStart(2,'0');
+  const el = document.getElementById('timer-display');
+  if (el) el.textContent = `${m}:${s}`;
+}
+
+function startTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timer-start-btn').textContent='▶ Start';
+    return;
+  }
+  timerRunning = true;
+  document.getElementById('timer-start-btn').textContent='⏸ Pause';
+  timerInterval = setInterval(()=>{
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds<=0) {
+      clearInterval(timerInterval);
+      timerRunning=false;
+      document.getElementById('timer-start-btn').textContent='▶ Start';
+      playBell();
+      const duration=Math.round(timerOriginal/60);
+      setState(s=>{s.mind.sessions.unshift({id:uid(),duration,date:today(),note:''});return s;});
+      const noteEl = document.getElementById('timer-note');
+      if (noteEl) noteEl.textContent=`Session complete! ${duration} min logged.`;
+      showToast(`🧘 ${duration} min meditation complete ✓`);
+      timerSeconds=timerOriginal;
+      updateTimerDisplay();
+    }
+  },1000);
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning=false;
+  timerSeconds=timerOriginal;
+  updateTimerDisplay();
+  const btn = document.getElementById('timer-start-btn');
+  if (btn) btn.textContent='▶ Start';
+  const noteEl = document.getElementById('timer-note');
+  if (noteEl) noteEl.textContent='';
+}
+
+function playBell() {
+  try {
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(); const g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='sine'; o.frequency.setValueAtTime(528,ctx.currentTime);
+    g.gain.setValueAtTime(0.6,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+3);
+    o.start(); o.stop(ctx.currentTime+3);
+  } catch(e){}
+}
+
+function renderMindLog() {
+  const sessions=getState().mind.sessions;
+  const el=document.getElementById('mind-session-list');
+  if(!el)return;
+  const total=sessions.reduce((sum,s)=>sum+s.duration,0);
+  el.innerHTML=`<div style="color:var(--muted);margin-bottom:16px;font-size:13px;">Total: ${total} minutes across ${sessions.length} sessions</div>`+
+    (sessions.length?sessions.slice(0,30).map(s=>`
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:12px 16px;">
+        <div><span style="font-size:14px;font-weight:600;">🧘 ${s.duration} min</span> <span style="color:var(--muted);font-size:12px;margin-left:8px;">${s.date}</span></div>
+        <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteMindSession('${s.id}')">✕</button>
+      </div>
+    `).join(''):'<div class="empty-state"><div class="empty-icon">🧘</div>Complete a timer session to log it here.</div>');
+}
+
+function deleteMindSession(id){setState(s=>{s.mind.sessions=s.mind.sessions.filter(x=>x.id!==id);return s;});renderMindLog();}
+
+function saveSpiritual() {
+  const url=document.getElementById('sp-url').value.trim();
+  const note=document.getElementById('sp-note').value.trim();
+  if (!url&&!note) return;
+  setState(s=>{s.mind.bookmarks.unshift({id:uid(),url,note,date:today()});return s;});
+  document.getElementById('sp-url').value=''; document.getElementById('sp-note').value='';
+  renderSpiritual(); showToast('Bookmark saved ✓');
+}
+
+function renderSpiritual() {
+  const items=getState().mind.bookmarks;
+  const el=document.getElementById('spiritual-list'); if(!el)return;
+  el.innerHTML=items.length?items.map(b=>`
+    <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;">
+      <div>
+        ${b.url?`<a href="${b.url}" target="_blank" style="color:var(--gold);font-size:13px;text-decoration:none;">${b.note||b.url}</a>`:
+          `<span style="font-size:13px;">${b.note}</span>`}
+        <div style="font-size:11px;color:var(--muted);">${b.date}</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteSpiritual('${b.id}')">✕</button>
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">🕉️</div>Paste spiritual links or notes here.</div>';
+}
+function deleteSpiritual(id){setState(s=>{s.mind.bookmarks=s.mind.bookmarks.filter(b=>b.id!==id);return s;});renderSpiritual();}
+
+function saveGratitude() {
+  const entries=['g1','g2','g3'].map(id=>document.getElementById(id)?.value.trim()).filter(Boolean);
+  if(!entries.length) return;
+  setState(s=>{s.mind.gratitude.unshift({id:uid(),entries,date:today()});return s;});
+  ['g1','g2','g3'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderGratitude(); showToast('Gratitude saved ✓');
+}
+
+function renderGratitude() {
+  const items=getState().mind.gratitude;
+  const el=document.getElementById('gratitude-list'); if(!el)return;
+  el.innerHTML=items.length?items.map(g=>`
+    <div class="card" style="margin-bottom:10px;padding:14px 18px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${g.date}</div>
+      ${g.entries.map((e,i)=>`<div style="font-size:13px;margin-bottom:3px;">${i+1}. ${e}</div>`).join('')}
+    </div>
+  `).join(''):'<div class="empty-state"><div class="empty-icon">🙏</div>Start your gratitude practice.</div>';
+}
+
+sectionRenderers['mind'] = () => { switchMindTab('timer'); updateTimerDisplay(); };
 </script>
 
 </body>
