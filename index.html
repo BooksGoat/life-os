@@ -460,11 +460,33 @@
 
       <!-- WATCH -->
       <section id="watch" class="section">
-        <div class="empty-state">
-          <div class="empty-icon">🎬</div>
-          Watch — coming in Task 6
-        </div>
-      </section>
+  <div class="section-title">📺 Watch</div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button class="btn btn-primary" id="watch-tab-movies" onclick="switchWatchTab('movies')">🎬 Movies & Series</button>
+    <button class="btn" id="watch-tab-youtube" onclick="switchWatchTab('youtube')">▶ YouTube Saves</button>
+  </div>
+  <div id="watch-panel-movies">
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <input type="text" id="movie-search-input" placeholder="Type movie/series title…" style="width:260px;">
+      <button class="btn btn-primary" onclick="addMovie()">+ Add</button>
+      <select id="movie-filter-status" onchange="renderMovies()" style="width:160px;">
+        <option value="">All statuses</option>
+        <option>Want to Watch</option><option>Watching</option><option>Done</option>
+      </select>
+    </div>
+    <div id="movie-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;"></div>
+  </div>
+  <div id="watch-panel-youtube" class="hidden">
+    <div style="margin-bottom:16px;display:flex;gap:12px;align-items:center;">
+      <label class="btn" style="cursor:pointer;">
+        📥 Import YouTube Takeout JSON
+        <input type="file" accept=".json" style="display:none;" onchange="importYoutubeWatch(this)">
+      </label>
+      <input type="text" id="yt-search" placeholder="Search saved videos…" style="width:260px;" oninput="renderYoutube()">
+    </div>
+    <div id="youtube-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
+  </div>
+</section>
 
       <!-- HEALTH -->
       <section id="health" class="section">
@@ -773,6 +795,140 @@ function importRecipeJSON(input) {
 }
 
 sectionRenderers['recipes'] = renderRecipes;
+
+// ── WATCH ────────────────────────────────────────────────
+let currentWatchTab = 'movies';
+
+function switchWatchTab(tab) {
+  currentWatchTab = tab;
+  document.getElementById('watch-panel-movies').classList.toggle('hidden', tab !== 'movies');
+  document.getElementById('watch-panel-youtube').classList.toggle('hidden', tab !== 'youtube');
+  document.getElementById('watch-tab-movies').className = 'btn' + (tab === 'movies' ? ' btn-primary' : '');
+  document.getElementById('watch-tab-youtube').className = 'btn' + (tab === 'youtube' ? ' btn-primary' : '');
+  if (tab === 'movies') renderMovies(); else renderYoutube();
+}
+
+async function addMovie() {
+  const title = document.getElementById('movie-search-input').value.trim();
+  if (!title) return;
+  const state = getState();
+  const tmdbKey = state.settings.tmdbKey;
+  let movie = { id: uid(), title, status: 'Want to Watch', rating: 0, notes: '', date: new Date().toISOString() };
+  if (tmdbKey) {
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&query=${encodeURIComponent(title)}`);
+      const data = await res.json();
+      const hit = data.results?.[0];
+      if (hit) {
+        movie.title = hit.title || hit.name;
+        movie.poster = hit.poster_path ? `https://image.tmdb.org/t/p/w300${hit.poster_path}` : '';
+        movie.year = (hit.release_date || hit.first_air_date || '').slice(0, 4);
+        movie.rating_tmdb = Math.round((hit.vote_average || 0) * 10) / 10;
+        movie.type = hit.media_type;
+      }
+    } catch(e) {}
+  }
+  setState(s => { s.watch.movies.unshift(movie); return s; });
+  document.getElementById('movie-search-input').value = '';
+  renderMovies();
+  showToast(`Added: ${movie.title} ✓`);
+}
+
+function renderMovies() {
+  const state = getState();
+  const filter = document.getElementById('movie-filter-status')?.value || '';
+  const items = state.watch.movies.filter(m => !filter || m.status === filter);
+  const grid = document.getElementById('movie-grid');
+  if (!grid) return;
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div>No movies yet. Add TMDB API key in Settings for posters.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(m => `
+    <div class="card" style="padding:0;overflow:hidden;">
+      ${m.poster ? `<img src="${m.poster}" style="width:100%;height:220px;object-fit:cover;">` :
+        `<div style="height:180px;background:radial-gradient(ellipse,rgba(232,144,10,0.15),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">🎬</div>`}
+      <div style="padding:10px;">
+        <div style="font-size:13px;font-weight:600;line-height:1.3;">${m.title}</div>
+        <div style="font-size:11px;color:var(--muted);margin:3px 0;">${m.year||''} ${m.rating_tmdb ? '★'+m.rating_tmdb : ''}</div>
+        <select onchange="updateMovieStatus('${m.id}',this.value)" style="width:100%;font-size:11px;padding:4px;margin-bottom:6px;">
+          ${['Want to Watch','Watching','Done'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn" style="font-size:11px;padding:3px 8px;width:100%;" onclick="deleteMovie('${m.id}')">Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateMovieStatus(id, status) {
+  setState(s => { const m = s.watch.movies.find(m=>m.id===id); if(m) m.status=status; return s; });
+}
+
+function deleteMovie(id) {
+  setState(s => { s.watch.movies = s.watch.movies.filter(m=>m.id!==id); return s; });
+  renderMovies();
+}
+
+function importYoutubeWatch(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const raw = JSON.parse(e.target.result);
+      const items = Array.isArray(raw) ? raw : raw.items || raw.videos || [];
+      const existing = getState().watch.youtube.map(v=>v.url).filter(Boolean);
+      const videos = items
+        .filter(item => {
+          const t = (item.title||item.snippet?.title||'').toLowerCase();
+          return !RECIPE_KEYWORDS.some(k=>t.includes(k));
+        })
+        .map(item => {
+          const videoId = item.contentDetails?.videoId || '';
+          return {
+            id: uid(),
+            title: item.title||item.snippet?.title||'Untitled',
+            url: item.titleUrl || (videoId ? `https://youtube.com/watch?v=${videoId}` : ''),
+            thumb: item.snippet?.thumbnails?.medium?.url || '',
+            date: item.time||new Date().toISOString()
+          };
+        })
+        .filter(v => !v.url || !existing.includes(v.url));
+      setState(s => { s.watch.youtube = [...videos, ...s.watch.youtube]; return s; });
+      renderYoutube();
+      showToast(`Imported ${videos.length} videos ✓`);
+    } catch(err) { alert('Parse error: '+err.message); }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function renderYoutube() {
+  const q = (document.getElementById('yt-search')?.value||'').toLowerCase();
+  const items = getState().watch.youtube.filter(v=>!q||v.title.toLowerCase().includes(q));
+  const grid = document.getElementById('youtube-grid');
+  if (!grid) return;
+  if (!items.length) { grid.innerHTML='<div class="empty-state"><div class="empty-icon">▶</div>Import YouTube Takeout JSON to see saved videos.</div>'; return; }
+  grid.innerHTML = items.map(v=>`
+    <div class="card" style="padding:0;overflow:hidden;">
+      ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:120px;object-fit:cover;">`:
+        `<div style="height:80px;background:rgba(232,144,10,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;">▶</div>`}
+      <div style="padding:10px;">
+        <div style="font-size:12px;font-weight:600;line-height:1.3;margin-bottom:6px;">${v.title}</div>
+        <div style="display:flex;gap:6px;">
+          ${v.url?`<a href="${v.url}" target="_blank" class="btn" style="font-size:11px;padding:3px 8px;text-decoration:none;">Watch</a>`:''}
+          <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteYT('${v.id}')">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteYT(id) {
+  setState(s=>{s.watch.youtube=s.watch.youtube.filter(v=>v.id!==id);return s;});
+  renderYoutube();
+}
+
+sectionRenderers['watch'] = () => { switchWatchTab(currentWatchTab); };
 </script>
 
 </body>
