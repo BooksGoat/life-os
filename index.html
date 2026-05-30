@@ -2067,6 +2067,8 @@ function doImportLocal(input){
   reader.readAsText(file);
 }
 
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
 // ── IMAGE DB (IndexedDB) ─────────────────────────────────
 const IMG_DB_NAME = 'lifeos_images';
 const IMG_DB_VERSION = 1;
@@ -2122,6 +2124,8 @@ function compressImageToDataUrl(arrayBuffer, maxWidth = 400) {
     const blob = new Blob([arrayBuffer]);
     const url = URL.createObjectURL(blob);
     const img = new Image();
+    const timer = setTimeout(() => { URL.revokeObjectURL(url); resolve(null); }, 10000);
+    const done = (result) => { clearTimeout(timer); URL.revokeObjectURL(url); resolve(result); };
     img.onload = () => {
       const scale = Math.min(1, maxWidth / img.width);
       const w = Math.round(img.width * scale);
@@ -2130,10 +2134,9 @@ function compressImageToDataUrl(arrayBuffer, maxWidth = 400) {
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', 0.72));
+      done(canvas.toDataURL('image/jpeg', 0.72));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.onerror = () => done(null);
     img.src = url;
   });
 }
@@ -2302,9 +2305,13 @@ async function parseEpub(file) {
     const name = chapterFiles[i];
     const chNum = i + 1;
     showParseProgress(`Parsing chapter ${chNum} of ${chapterFiles.length}…`, chNum / chapterFiles.length);
-    const xml = await zip.file(name).async('string');
-    const recipes = await parseChapter(xml, zip, bookId, bookTitle);
-    allRecipes.push(...recipes);
+    try {
+      const xml = await zip.file(name).async('string');
+      const recipes = await parseChapter(xml, zip, bookId, bookTitle);
+      allRecipes.push(...recipes);
+    } catch (e) {
+      console.warn('Skipping chapter', name, e);
+    }
   }
 
   setState(s => {
@@ -2436,13 +2443,13 @@ function recipeCardHtml(recipe, imageDataUrl) {
   return `<div class="rv-card" onclick="showRecipeDetail('${recipe.id}')">
     <div class="rv-card-img">
       ${imgHtml}
-      <div class="rv-book-badge">${(recipe.bookTitle||'').substring(0,18)}</div>
+      <div class="rv-book-badge">${esc(recipe.bookTitle).substring(0,18)}</div>
     </div>
     <div class="rv-card-body">
-      <div class="rv-card-name">${recipe.title}</div>
-      <div class="rv-card-book">${recipe.bookTitle||''}</div>
+      <div class="rv-card-name">${esc(recipe.title)}</div>
+      <div class="rv-card-book">${esc(recipe.bookTitle)}</div>
       <div class="rv-card-tags">
-        <span class="rv-tag rv-tag-meal">${recipe.mealType||''}</span>
+        <span class="rv-tag rv-tag-meal">${esc(recipe.mealType)}</span>
         ${simlHtml}${servesHtml}
       </div>
     </div>
@@ -2462,7 +2469,7 @@ async function renderRecipeGrid() {
         onclick="document.getElementById('rv-epub-input').click()"
         ondragover="event.preventDefault();this.classList.add('drag-over')"
         ondragleave="this.classList.remove('drag-over')"
-        ondrop="this.classList.remove('drag-over');parseEpub(event.dataTransfer.files[0])">
+        ondrop="event.preventDefault();this.classList.remove('drag-over');parseEpub(event.dataTransfer.files[0])">
         <div class="rv-import-icon">📚</div>
         <div class="rv-import-title">Add your first recipe book</div>
         <div class="rv-import-sub">Drop an EPUB here or click to choose a file.<br>All recipes, chapters, and photos are extracted automatically.</div>
@@ -2515,18 +2522,18 @@ async function showRecipeDetail(id) {
   const placeholder = MEAL_PLACEHOLDER_EMOJI[recipe.mealType] || MEAL_PLACEHOLDER_EMOJI.default;
 
   const heroHtml = imageDataUrl
-    ? `<img class="rv-modal-hero" src="${imageDataUrl}" alt="${recipe.title.replace(/"/g,'')}">`
+    ? `<img class="rv-modal-hero" src="${imageDataUrl}" alt="${esc(recipe.title)}">`
     : `<div class="rv-modal-hero-placeholder">${placeholder}</div>`;
 
   const simlLabels = { S: 'Short on time', I: '≤10 ingredients', M: 'Make ahead', L: 'Lazy' };
   const simlHtml = (recipe.siml || []).map(t =>
-    `<span class="rv-tag rv-tag-siml">${t} — ${simlLabels[t]||t}</span>`
+    `<span class="rv-tag rv-tag-siml">${esc(t)} — ${esc(simlLabels[t]||t)}</span>`
   ).join('');
   const servesHtml = recipe.serves
-    ? `<span class="rv-tag rv-tag-serves">${recipe.serves}</span>`
+    ? `<span class="rv-tag rv-tag-serves">${esc(recipe.serves)}</span>`
     : '';
   const mealHtml = recipe.mealType
-    ? `<span class="rv-tag rv-tag-meal">${recipe.mealType}</span>`
+    ? `<span class="rv-tag rv-tag-meal">${esc(recipe.mealType)}</span>`
     : '';
 
   const ingredientsHtml = (recipe.ingredients || []).map(i =>
@@ -2544,8 +2551,8 @@ async function showRecipeDetail(id) {
         ${heroHtml}
         <div class="rv-modal-content">
           <button class="rv-modal-back" onclick="closeRecipeDetail()">← Back</button>
-          <div class="rv-modal-title">${recipe.title}</div>
-          <div class="rv-modal-book">${recipe.bookTitle||''} · ${recipe.chapter||''}</div>
+          <div class="rv-modal-title">${esc(recipe.title)}</div>
+          <div class="rv-modal-book">${esc(recipe.bookTitle)} · ${esc(recipe.chapter)}</div>
           <div class="rv-modal-meta">${mealHtml}${servesHtml}${simlHtml}</div>
           ${recipe.intro ? `<p style="font-size:13px;color:#9090b0;line-height:1.6;margin-bottom:24px;">${recipe.intro.replace(/</g,'&lt;')}</p>` : ''}
           <div class="rv-modal-body">
