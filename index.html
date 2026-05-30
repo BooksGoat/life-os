@@ -357,6 +357,28 @@
       background: rgba(255,180,30,0.35);
     }
 
+    /* ── TODAY SECTION SHORTCUTS ────────────────────────── */
+    .today-sections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .tst {
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 12px 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s, transform 0.12s;
+      user-select: none;
+    }
+    .tst:hover { background: var(--s3); transform: translateY(-2px); border-color: rgba(255,255,255,0.13); }
+    .tst:active { transform: translateY(0); }
+    .tst-icon { font-size: 30px; margin-bottom: 9px; }
+    .tst-name { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+
     /* ── RECIPES v2 ─────────────────────────────────────── */
     body { font-family: 'Inter', system-ui, sans-serif; }
 
@@ -718,6 +740,14 @@
       <div id="today-recipe-title" style="font-size:16px;font-weight:800;">Recipes</div>
       <div id="today-recipe-meta" style="font-size:12px;color:#5a5575;margin-top:2px;"></div>
     </div>
+  </div>
+  <div class="today-sections-grid">
+    <div class="tst" onclick="navigate('watch')"><div class="tst-icon">🎬</div><div class="tst-name">Watch</div></div>
+    <div class="tst" onclick="navigate('health')"><div class="tst-icon">💪</div><div class="tst-name">Health</div></div>
+    <div class="tst" onclick="navigate('mind')"><div class="tst-icon">🧠</div><div class="tst-name">Mind</div></div>
+    <div class="tst" onclick="navigate('books')"><div class="tst-icon">📚</div><div class="tst-name">Books</div></div>
+    <div class="tst" onclick="navigate('family')"><div class="tst-icon">👨‍👩‍👧</div><div class="tst-name">Family</div></div>
+    <div class="tst" onclick="navigate('ideas')"><div class="tst-icon">💡</div><div class="tst-name">Ideas</div></div>
   </div>
 </section>
 
