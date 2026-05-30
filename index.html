@@ -2469,6 +2469,71 @@ function renderRecipes() {
 
 sectionRenderers['recipes'] = renderRecipes;
 
+async function showRecipeDetail(id) {
+  const state = getState();
+  const recipe = (state.recipes || []).find(r => r.id === id);
+  if (!recipe) return;
+
+  const imageDataUrl = await getImage(id);
+  const placeholder = MEAL_PLACEHOLDER_EMOJI[recipe.mealType] || MEAL_PLACEHOLDER_EMOJI.default;
+
+  const heroHtml = imageDataUrl
+    ? `<img class="rv-modal-hero" src="${imageDataUrl}" alt="${recipe.title.replace(/"/g,'')}">`
+    : `<div class="rv-modal-hero-placeholder">${placeholder}</div>`;
+
+  const simlLabels = { S: 'Short on time', I: '≤10 ingredients', M: 'Make ahead', L: 'Lazy' };
+  const simlHtml = (recipe.siml || []).map(t =>
+    `<span class="rv-tag rv-tag-siml">${t} — ${simlLabels[t]||t}</span>`
+  ).join('');
+  const servesHtml = recipe.serves
+    ? `<span class="rv-tag rv-tag-serves">${recipe.serves}</span>`
+    : '';
+  const mealHtml = recipe.mealType
+    ? `<span class="rv-tag rv-tag-meal">${recipe.mealType}</span>`
+    : '';
+
+  const ingredientsHtml = (recipe.ingredients || []).map(i =>
+    `<li>${i.replace(/</g,'&lt;')}</li>`
+  ).join('');
+
+  const stepsHtml = (recipe.steps || []).map(s =>
+    `<li>${s.replace(/</g,'&lt;')}</li>`
+  ).join('');
+
+  const root = document.getElementById('rv-modal-root');
+  root.innerHTML = `
+    <div class="rv-modal-overlay" onclick="if(event.target===this)closeRecipeDetail()">
+      <div class="rv-modal">
+        ${heroHtml}
+        <div class="rv-modal-content">
+          <button class="rv-modal-back" onclick="closeRecipeDetail()">← Back</button>
+          <div class="rv-modal-title">${recipe.title}</div>
+          <div class="rv-modal-book">${recipe.bookTitle||''} · ${recipe.chapter||''}</div>
+          <div class="rv-modal-meta">${mealHtml}${servesHtml}${simlHtml}</div>
+          ${recipe.intro ? `<p style="font-size:13px;color:#9090b0;line-height:1.6;margin-bottom:24px;">${recipe.intro.replace(/</g,'&lt;')}</p>` : ''}
+          <div class="rv-modal-body">
+            <div>
+              <div class="rv-modal-section-title">Ingredients</div>
+              <ul class="rv-ingredient-list">${ingredientsHtml}</ul>
+            </div>
+            <div>
+              <div class="rv-modal-section-title">Method</div>
+              <ol class="rv-step-list">${stepsHtml}</ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRecipeDetail() {
+  const root = document.getElementById('rv-modal-root');
+  if (root) root.innerHTML = '';
+  document.body.style.overflow = '';
+}
+
 window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
 </script>
 
