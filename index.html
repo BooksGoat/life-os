@@ -806,8 +806,14 @@
 
       <!-- RECIPES -->
       <section id="recipes" class="section"
+        ondragenter="event.preventDefault();document.getElementById('rv-drop-overlay').style.display='flex'"
         ondragover="event.preventDefault()"
-        ondrop="event.preventDefault();if(event.dataTransfer.files[0])parseEpub(event.dataTransfer.files[0])">
+        ondragleave="if(!document.getElementById('recipes').contains(event.relatedTarget))document.getElementById('rv-drop-overlay').style.display='none'"
+        ondrop="event.preventDefault();document.getElementById('rv-drop-overlay').style.display='none';if(event.dataTransfer.files[0])parseEpub(event.dataTransfer.files[0])">
+  <div id="rv-drop-overlay" style="display:none;position:fixed;inset:0;background:rgba(138,92,246,0.18);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;pointer-events:none;">
+    <div style="font-size:56px;">📥</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;">Drop EPUB to import</div>
+  </div>
   <div id="rv-header-root"></div>
   <div id="rv-tabs-root"></div>
   <div id="rv-content-root"></div>
