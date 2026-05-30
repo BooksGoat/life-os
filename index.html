@@ -2200,6 +2200,206 @@ function compressImageToDataUrl(arrayBuffer, maxWidth = 400) {
   });
 }
 
+// ── EPUB PARSER ──────────────────────────────────────────
+const CHAPTER_TO_MEAL = {
+  'brunch': 'breakfast',
+  'raw veg': 'lunch',
+  'cooked veg': 'lunch',
+  'rice, grains, and pulses': 'dinner',
+  'noodles and pasta': 'dinner',
+  'meat': 'dinner',
+  'seafood': 'dinner',
+  'dessert': 'snack',
+  'drinks': 'drinks',
+  'salads': 'lunch',
+  'soups': 'lunch',
+  'snacks': 'snack',
+  'breakfast': 'breakfast',
+  'lunch': 'lunch',
+  'dinner': 'dinner',
+};
+
+function chapterToMealType(chapter) {
+  if (!chapter) return 'dinner';
+  const lc = chapter.toLowerCase();
+  for (const [key, val] of Object.entries(CHAPTER_TO_MEAL)) {
+    if (lc.includes(key)) return val;
+  }
+  return 'dinner';
+}
+
+function paraText(el) {
+  return (el.textContent || '').trim().replace(/\s+/g, ' ');
+}
+
+async function parseChapter(chapterXml, zip, bookId, bookTitle) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(chapterXml, 'application/xhtml+xml');
+
+  const chapterNameEl = doc.querySelector('.ct');
+  const chapterName = chapterNameEl ? paraText(chapterNameEl) : '';
+  const mealType = chapterToMealType(chapterName);
+
+  const headings = Array.from(doc.querySelectorAll('.OS_RECIPE-HEADING'));
+  const recipes = [];
+
+  for (const heading of headings) {
+    const title = paraText(heading);
+    if (!title) continue;
+
+    const siblings = [];
+    let node = heading.nextElementSibling;
+    while (node && !node.classList.contains('OS_RECIPE-HEADING')) {
+      siblings.push(node);
+      node = node.nextElementSibling;
+    }
+
+    let imageName = null;
+    let imageDataUrl = null;
+    const imgDiv = siblings.find(el => el.classList.contains('recipe_img'));
+    if (imgDiv) {
+      const imgEl = imgDiv.querySelector('img');
+      if (imgEl) {
+        imageName = imgEl.getAttribute('src').split('/').pop();
+        const zipPath = `OEBPS/images/${imageName}`;
+        const imgFile = zip.file(zipPath);
+        if (imgFile) {
+          const ab = await imgFile.async('arraybuffer');
+          imageDataUrl = await compressImageToDataUrl(ab, 400);
+        }
+      }
+    }
+
+    const simlTags = [];
+    const lineDiv = siblings.find(el => el.classList.contains('line'));
+    if (lineDiv) {
+      lineDiv.querySelectorAll('img').forEach(img => {
+        const src = img.getAttribute('src') || '';
+        if (src.endsWith('/s.jpg') || src === '../images/s.jpg') simlTags.push('S');
+        if (src.endsWith('/i.jpg') || src === '../images/i.jpg') simlTags.push('I');
+        if (src.endsWith('/m.jpg') || src === '../images/m.jpg') simlTags.push('M');
+        if (src.endsWith('/l.jpg') || src === '../images/l.jpg') simlTags.push('L');
+      });
+    }
+
+    const introPara = siblings.find(el =>
+      el.classList.contains('OS_RECIPE-INTRO') || el.classList.contains('RECIPE-INTRO')
+    );
+    const intro = introPara ? paraText(introPara) : '';
+
+    const servesPara = siblings.find(el => el.classList.contains('OS_Serves'));
+    const serves = servesPara ? paraText(servesPara) : '';
+
+    const ingredients = siblings
+      .filter(el => el.classList.contains('OS_INGREDIENTS-LIST') || el.classList.contains('OS_double-column-ingredients'))
+      .map(el => paraText(el))
+      .filter(Boolean);
+
+    const steps = [];
+    siblings.forEach(el => {
+      if (el.tagName === 'OL') {
+        el.querySelectorAll('li.OS_method p, li.OS_method').forEach(li => {
+          const t = paraText(li);
+          if (t) steps.push(t);
+        });
+      }
+    });
+
+    const recipe = {
+      id: uid(),
+      bookId,
+      bookTitle,
+      title,
+      chapter: chapterName,
+      mealType,
+      imageName,
+      serves,
+      intro,
+      ingredients,
+      steps,
+      siml: simlTags,
+      addedAt: Date.now(),
+    };
+
+    recipes.push(recipe);
+
+    if (imageDataUrl) {
+      await storeImage(recipe.id, imageDataUrl);
+    }
+  }
+
+  return recipes;
+}
+
+async function parseEpub(file) {
+  const bookId = uid();
+  const bookTitle = file.name
+    .replace(/\.epub$/i, '')
+    .replace(/\s*--\s*.*/g, '')
+    .trim();
+
+  showParseProgress('Loading file…', 0);
+
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(file);
+  } catch (e) {
+    alert('Could not open EPUB: ' + e.message);
+    hideParseProgress();
+    return;
+  }
+
+  const chapterFiles = Object.keys(zip.files)
+    .filter(name => /OEBPS\/xhtml\/c\d+\.xhtml$/i.test(name))
+    .sort();
+
+  if (chapterFiles.length === 0) {
+    alert('No recipe chapters found in this EPUB. Only Ottolenghi-style EPUBs are supported.');
+    hideParseProgress();
+    return;
+  }
+
+  const allRecipes = [];
+  for (let i = 0; i < chapterFiles.length; i++) {
+    const name = chapterFiles[i];
+    const chNum = i + 1;
+    showParseProgress(`Parsing chapter ${chNum} of ${chapterFiles.length}…`, chNum / chapterFiles.length);
+    const xml = await zip.file(name).async('string');
+    const recipes = await parseChapter(xml, zip, bookId, bookTitle);
+    allRecipes.push(...recipes);
+  }
+
+  setState(s => {
+    const existing = s.recipes || [];
+    s.recipes = [...allRecipes, ...existing];
+    if (!s.books) s.books = [];
+    s.books.unshift({ id: bookId, title: bookTitle, recipeCount: allRecipes.length, addedAt: Date.now() });
+    return s;
+  });
+
+  hideParseProgress();
+  showToast(`Imported ${allRecipes.length} recipes from "${bookTitle}" ✓`);
+  renderRecipes();
+}
+
+function showParseProgress(label, fraction) {
+  const root = document.getElementById('rv-content-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="rv-parse-progress">
+      <div class="rv-parse-label">${label}</div>
+      <div class="rv-parse-bar-wrap">
+        <div class="rv-parse-bar" style="width:${Math.round(fraction * 100)}%"></div>
+      </div>
+      <div class="rv-parse-sub">Extracting recipes and compressing photos…</div>
+    </div>`;
+}
+
+function hideParseProgress() {
+  const root = document.getElementById('rv-content-root');
+  if (root) root.innerHTML = '';
+}
+
 window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
 </script>
 
