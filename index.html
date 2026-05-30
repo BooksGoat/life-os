@@ -1144,107 +1144,8 @@ function showToast(msg) {
 sectionRenderers['today'] = renderToday;
 renderToday();
 
-// ── RECIPES ──────────────────────────────────────────────
-const RECIPE_KEYWORDS = ['recipe','cook','how to make','homemade','bake','fry','grill','roast','curry','biryani','pasta','soup'];
-
-function renderRecipes() {
-  const state = getState();
-  const q = (document.getElementById('recipe-search')?.value || '').toLowerCase();
-  const cuisine = document.getElementById('recipe-filter-cuisine')?.value || '';
-  const meal = document.getElementById('recipe-filter-meal')?.value || '';
-
-  let items = state.recipes.filter(r => {
-    if (q && !r.title.toLowerCase().includes(q) && !(r.tags||[]).join(' ').toLowerCase().includes(q)) return false;
-    if (cuisine && r.cuisine !== cuisine) return false;
-    if (meal && r.meal !== meal) return false;
-    return true;
-  });
-
-  const grid = document.getElementById('recipe-grid');
-  if (!grid) return;
-  if (!items.length) {
-    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🍳</div>No recipes yet. Import from Google Takeout JSON or add manually.</div>';
-    return;
-  }
-  grid.innerHTML = items.map(r => `
-    <div class="card" style="overflow:hidden;padding:0;">
-      ${r.thumb ? `<img src="${r.thumb}" style="width:100%;height:130px;object-fit:cover;" onerror="this.style.display='none'">` : `<div style="height:80px;background:radial-gradient(ellipse at center,rgba(232,144,10,0.2),transparent);display:flex;align-items:center;justify-content:center;font-size:36px;">🍳</div>`}
-      <div style="padding:12px;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.3;">${r.title}</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${r.source||''} ${r.cuisine ? '· '+r.cuisine : ''} ${r.meal ? '· '+r.meal : ''}</div>
-        <div>${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
-        <div style="display:flex;gap:6px;margin-top:10px;">
-          ${r.url ? `<a href="${r.url}" target="_blank" class="btn" style="font-size:11px;padding:4px 10px;text-decoration:none;">▶ Watch</a>` : ''}
-          <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="deleteRecipe('${r.id}')">✕</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function showAddRecipe() {
-  document.getElementById('recipe-add-form').classList.remove('hidden');
-}
-
-function saveRecipe() {
-  const title = document.getElementById('r-title').value.trim();
-  if (!title) return alert('Title required');
-  const recipe = {
-    id: uid(), title,
-    url: document.getElementById('r-url').value.trim(),
-    thumb: document.getElementById('r-thumb').value.trim(),
-    cuisine: document.getElementById('r-cuisine').value,
-    meal: document.getElementById('r-meal').value,
-    tags: document.getElementById('r-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    source: 'manual', date: new Date().toISOString()
-  };
-  setState(s => { s.recipes.unshift(recipe); return s; });
-  document.getElementById('recipe-add-form').classList.add('hidden');
-  ['r-title','r-url','r-thumb','r-tags'].forEach(id => document.getElementById(id).value = '');
-  renderRecipes();
-  showToast('Recipe saved ✓');
-}
-
-function deleteRecipe(id) {
-  if (!confirm('Delete this recipe?')) return;
-  setState(s => { s.recipes = s.recipes.filter(r => r.id !== id); return s; });
-  renderRecipes();
-}
-
-function importRecipeJSON(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const raw = JSON.parse(e.target.result);
-      const items = Array.isArray(raw) ? raw : raw.videos ? raw.videos : raw.items ? raw.items : [];
-      const existing = getState().recipes.map(r => r.url).filter(Boolean);
-      const recipes = items
-        .filter(item => {
-          const title = (item.title || item.snippet?.title || '').toLowerCase();
-          return RECIPE_KEYWORDS.some(k => title.includes(k));
-        })
-        .map(item => {
-          const title = item.title || item.snippet?.title || 'Untitled';
-          const videoId = item.contentDetails?.videoId || '';
-          const url = item.titleUrl || (videoId ? `https://youtube.com/watch?v=${videoId}` : '');
-          const thumb = item.snippet?.thumbnails?.medium?.url || '';
-          return { id: uid(), title, url, thumb, source: 'youtube', cuisine: '', meal: '', tags: ['recipe'], date: item.time || new Date().toISOString() };
-        })
-        .filter(r => !r.url || !existing.includes(r.url));
-      setState(s => { s.recipes = [...recipes, ...s.recipes]; return s; });
-      renderRecipes();
-      showToast(`Imported ${recipes.length} recipes ✓`);
-    } catch(err) { alert('Could not parse JSON: ' + err.message); }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
-
-sectionRenderers['recipes'] = renderRecipes;
-
 // ── WATCH ────────────────────────────────────────────────
+const RECIPE_KEYWORDS = ['recipe','cook','how to make','homemade','bake','fry','grill','roast','curry','biryani','pasta','soup'];
 let currentWatchTab = 'movies';
 
 function switchWatchTab(tab) {
@@ -2399,6 +2300,174 @@ function hideParseProgress() {
   const root = document.getElementById('rv-content-root');
   if (root) root.innerHTML = '';
 }
+
+// ── RECIPES v2 RENDERER ──────────────────────────────────
+let recipeActiveTab = 'all';
+let recipeSearchQ = '';
+
+const MEAL_TABS = [
+  { id: 'all',       label: 'All',       emoji: '' },
+  { id: 'breakfast', label: 'Breakfast', emoji: '🌅' },
+  { id: 'lunch',     label: 'Lunch',     emoji: '☀️' },
+  { id: 'dinner',    label: 'Dinner',    emoji: '🌙' },
+  { id: 'snack',     label: 'Snacks',    emoji: '🍿' },
+  { id: 'drinks',    label: 'Drinks',    emoji: '🍹' },
+];
+
+const MEAL_PLACEHOLDER_EMOJI = {
+  breakfast: '🍳', lunch: '🥗', dinner: '🍝', snack: '🍿', drinks: '🥤', default: '🍽️'
+};
+
+function getFilteredRecipes() {
+  const state = getState();
+  const recipes = state.recipes || [];
+  return recipes.filter(r => {
+    const matchTab = recipeActiveTab === 'all' || r.mealType === recipeActiveTab;
+    if (!matchTab) return false;
+    if (!recipeSearchQ) return true;
+    const q = recipeSearchQ.toLowerCase();
+    return (
+      r.title.toLowerCase().includes(q) ||
+      (r.bookTitle || '').toLowerCase().includes(q) ||
+      (r.ingredients || []).some(ing => ing.toLowerCase().includes(q)) ||
+      (r.chapter || '').toLowerCase().includes(q)
+    );
+  });
+}
+
+function renderRecipesHeader() {
+  const state = getState();
+  const books = state.books || [];
+  const recipes = state.recipes || [];
+  const root = document.getElementById('rv-header-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="rv-header">
+      <div>
+        <div class="rv-title">🍳 Recipe Library</div>
+        <div class="rv-sub">${recipes.length} recipe${recipes.length !== 1 ? 's' : ''} across ${books.length} book${books.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="rv-controls">
+        <div class="rv-search-box">
+          <span style="font-size:13px;color:#3a3555;">🔍</span>
+          <input type="text" placeholder='Search "fish", "pasta", "quick"…'
+            value="${recipeSearchQ.replace(/"/g, '&quot;')}"
+            oninput="recipeSearchQ=this.value;renderRecipeGrid()">
+        </div>
+        <button class="rv-add-book-btn" onclick="document.getElementById('rv-epub-input').click()">
+          📥 Add Book
+        </button>
+        <input type="file" id="rv-epub-input" accept=".epub" style="display:none"
+          onchange="parseEpub(this.files[0]).then(()=>{this.value=''})">
+      </div>
+    </div>`;
+}
+
+function renderRecipeTabs() {
+  const state = getState();
+  const recipes = state.recipes || [];
+  const root = document.getElementById('rv-tabs-root');
+  if (!root) return;
+  const counts = {};
+  recipes.forEach(r => { counts[r.mealType] = (counts[r.mealType] || 0) + 1; });
+  root.innerHTML = `
+    <div class="rv-tabs">
+      ${MEAL_TABS.map(tab => {
+        const count = tab.id === 'all' ? recipes.length : (counts[tab.id] || 0);
+        return `<button class="rv-tab${recipeActiveTab === tab.id ? ' active' : ''}"
+          onclick="recipeActiveTab='${tab.id}';renderRecipeTabs();renderRecipeGrid()">
+          ${tab.emoji ? tab.emoji + ' ' : ''}${tab.label}
+          <span class="rv-tab-n">${count}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+function recipeCardHtml(recipe, imageDataUrl) {
+  const placeholder = MEAL_PLACEHOLDER_EMOJI[recipe.mealType] || MEAL_PLACEHOLDER_EMOJI.default;
+  const imgHtml = imageDataUrl
+    ? `<img src="${imageDataUrl}" alt="${recipe.title.replace(/"/g, '')}" loading="lazy">`
+    : `<div class="rv-card-img-placeholder" style="background:radial-gradient(ellipse at 50% 30%,#1a1040 0%,#0a0820 100%)">${placeholder}</div>`;
+
+  const simlHtml = (recipe.siml || []).map(t =>
+    `<span class="rv-tag rv-tag-siml" title="${{S:'Short on time',I:'≤10 ingredients',M:'Make ahead',L:'Lazy'}[t]||t}">${t}</span>`
+  ).join('');
+  const servesHtml = recipe.serves
+    ? `<span class="rv-tag rv-tag-serves">${recipe.serves.replace(/^Serves\s*/i,'').trim()} servings</span>`
+    : '';
+
+  return `<div class="rv-card" onclick="showRecipeDetail('${recipe.id}')">
+    <div class="rv-card-img">
+      ${imgHtml}
+      <div class="rv-book-badge">${(recipe.bookTitle||'').substring(0,18)}</div>
+    </div>
+    <div class="rv-card-body">
+      <div class="rv-card-name">${recipe.title}</div>
+      <div class="rv-card-book">${recipe.bookTitle||''}</div>
+      <div class="rv-card-tags">
+        <span class="rv-tag rv-tag-meal">${recipe.mealType||''}</span>
+        ${simlHtml}${servesHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+async function renderRecipeGrid() {
+  const root = document.getElementById('rv-content-root');
+  if (!root) return;
+
+  const state = getState();
+  const recipes = state.recipes || [];
+
+  if (recipes.length === 0) {
+    root.innerHTML = `
+      <div class="rv-import-banner" id="rv-drop-zone"
+        onclick="document.getElementById('rv-epub-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="this.classList.remove('drag-over');parseEpub(event.dataTransfer.files[0])">
+        <div class="rv-import-icon">📚</div>
+        <div class="rv-import-title">Add your first recipe book</div>
+        <div class="rv-import-sub">Drop an EPUB here or click to choose a file.<br>All recipes, chapters, and photos are extracted automatically.</div>
+        <div class="rv-import-formats">
+          <span class="rv-fmt-chip">EPUB</span>
+          <span class="rv-fmt-chip" style="opacity:0.4">PDF (soon)</span>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const filtered = getFilteredRecipes();
+
+  if (filtered.length === 0) {
+    root.innerHTML = `<div class="empty-state" style="padding:48px 32px;">
+      <div class="empty-icon">🔍</div>No recipes match your search.</div>`;
+    return;
+  }
+
+  root.innerHTML = `<div class="rv-grid" id="rv-grid-inner">${
+    filtered.map(r => recipeCardHtml(r, null)).join('')
+  }</div>`;
+
+  for (const recipe of filtered) {
+    const dataUrl = await getImage(recipe.id);
+    if (dataUrl) {
+      const cardImg = document.querySelector(`[onclick="showRecipeDetail('${recipe.id}')"] .rv-card-img`);
+      if (cardImg) {
+        cardImg.innerHTML = `<img src="${dataUrl}" alt="${recipe.title.replace(/"/g,'')}" loading="lazy">
+          <div class="rv-book-badge">${(recipe.bookTitle||'').substring(0,18)}</div>`;
+      }
+    }
+  }
+}
+
+function renderRecipes() {
+  renderRecipesHeader();
+  renderRecipeTabs();
+  renderRecipeGrid();
+}
+
+sectionRenderers['recipes'] = renderRecipes;
 
 window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
 </script>
