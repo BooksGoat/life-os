@@ -2129,6 +2129,77 @@ function doImportLocal(input){
   reader.readAsText(file);
 }
 
+// ── IMAGE DB (IndexedDB) ─────────────────────────────────
+const IMG_DB_NAME = 'lifeos_images';
+const IMG_DB_VERSION = 1;
+const IMG_STORE = 'images';
+
+function openImageDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IMG_DB_NAME, IMG_DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IMG_STORE)) {
+        db.createObjectStore(IMG_STORE);
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function storeImage(key, dataUrl) {
+  const db = await openImageDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).put(dataUrl, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getImage(key) {
+  const db = await openImageDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readonly');
+    const req = tx.objectStore(IMG_STORE).get(key);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function deleteBookImages(bookId) {
+  const db = await openImageDB();
+  const recipes = getState().recipes.filter(r => r.bookId === bookId);
+  return Promise.all(recipes.map(r => new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).delete(r.id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  })));
+}
+
+function compressImageToDataUrl(arrayBuffer, maxWidth = 400) {
+  return new Promise((resolve) => {
+    const blob = new Blob([arrayBuffer]);
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
 window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
 </script>
 
