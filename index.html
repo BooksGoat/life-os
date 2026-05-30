@@ -441,6 +441,26 @@
     }
     .rv-add-book-btn:hover { background: rgba(138,92,246,0.25); }
 
+    .rv-books-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 12px 32px 0;
+    }
+    .rv-book-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px; padding: 6px 10px 6px 14px;
+      font-size: 12px;
+    }
+    .rv-book-chip-name { color: var(--text); font-weight: 600; }
+    .rv-book-chip-count { color: var(--muted); }
+    .rv-book-chip-del {
+      background: none; border: none; color: #5a5575;
+      cursor: pointer; font-size: 13px; padding: 0 2px;
+      line-height: 1; transition: color 0.15s;
+    }
+    .rv-book-chip-del:hover { color: #f472b6; }
+
     .rv-tabs {
       display: flex; gap: 2px;
       padding: 20px 32px 0;
@@ -2476,6 +2496,16 @@ function getFilteredRecipes() {
   });
 }
 
+async function deleteBook(bookId) {
+  await deleteBookImages(bookId);
+  setState(s => {
+    s.recipes = (s.recipes || []).filter(r => r.bookId !== bookId);
+    s.books = (s.books || []).filter(b => b.id !== bookId);
+    return s;
+  });
+  renderRecipes();
+}
+
 function renderRecipesHeader() {
   const state = getState();
   const books = state.books || [];
@@ -2501,7 +2531,16 @@ function renderRecipesHeader() {
         <input type="file" id="rv-epub-input" accept=".epub" style="display:none"
           onchange="parseEpub(this.files[0]).then(()=>{this.value=''})">
       </div>
-    </div>`;
+    </div>
+    ${books.length > 0 ? `
+    <div class="rv-books-row">
+      ${books.map(b => `
+        <div class="rv-book-chip">
+          <span class="rv-book-chip-name">📗 ${esc(b.title)}</span>
+          <span class="rv-book-chip-count">${b.recipeCount} recipes</span>
+          <button class="rv-book-chip-del" onclick="deleteBook('${esc(b.id)}')" title="Remove book">✕</button>
+        </div>`).join('')}
+    </div>` : ''}`;
 }
 
 function renderRecipeTabs() {
