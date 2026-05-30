@@ -41,4 +41,5 @@ No sidebar. Today dashboard = home. Section cards navigate to sections. `navigat
 | 2026-05-30 | Section cards: gradient backgrounds per life area (Recipes=amber, Health=green, Mind=purple, etc.) |
 | 2026-05-30 | Drop zone on entire `<section id="recipes">` — fixes second-book drop vanishing after first import |
 | 2026-05-30 | Added `rv-drop-overlay` full-screen purple blur overlay with visual feedback on dragenter — makes drop target obvious |
+| 2026-05-30 | Fix: `el.tagName === 'OL'` → `.toLowerCase() === 'ol'` — XHTML DOMParser returns lowercase tag names, so steps were never extracted |
 | 2026-05-30 | RECIPE_KEYWORDS kept (Watch section uses it for YouTube recipe filtering) |

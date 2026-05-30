@@ -2335,7 +2335,7 @@ async function parseChapter(chapterXml, zip, bookId, bookTitle) {
 
     const steps = [];
     siblings.forEach(el => {
-      if (el.tagName === 'OL') {
+      if (el.tagName.toLowerCase() === 'ol') {
         el.querySelectorAll('li.OS_method p, li.OS_method').forEach(li => {
           const t = paraText(li);
           if (t) steps.push(t);
