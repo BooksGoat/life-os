@@ -715,39 +715,10 @@
 
       <!-- RECIPES -->
       <section id="recipes" class="section">
-  <div class="section-title">🍳 Recipes</div>
-  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
-    <input type="text" id="recipe-search" placeholder="Search recipes…" style="width:240px;" oninput="renderRecipes()">
-    <select id="recipe-filter-cuisine" onchange="renderRecipes()" style="width:140px;">
-      <option value="">All cuisines</option>
-      <option>Indian</option><option>Italian</option><option>Chinese</option>
-      <option>Mexican</option><option>American</option><option>Other</option>
-    </select>
-    <select id="recipe-filter-meal" onchange="renderRecipes()" style="width:140px;">
-      <option value="">All meals</option>
-      <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option>
-    </select>
-    <label class="btn" style="cursor:pointer;">
-      📥 Import JSON
-      <input type="file" accept=".json" style="display:none;" onchange="importRecipeJSON(this)">
-    </label>
-    <button class="btn btn-primary" onclick="showAddRecipe()">+ Add Recipe</button>
-  </div>
-  <div id="recipe-add-form" class="card hidden" style="margin-bottom:20px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-      <input type="text" id="r-title" placeholder="Recipe title *">
-      <input type="text" id="r-url" placeholder="URL (optional)">
-      <input type="text" id="r-thumb" placeholder="Thumbnail URL (optional)">
-      <select id="r-cuisine"><option value="">Cuisine</option><option>Indian</option><option>Italian</option><option>Chinese</option><option>Mexican</option><option>American</option><option>Other</option></select>
-      <select id="r-meal"><option value="">Meal type</option><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
-      <input type="text" id="r-tags" placeholder="Tags (comma-separated)">
-    </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn btn-primary" onclick="saveRecipe()">Save</button>
-      <button class="btn" onclick="document.getElementById('recipe-add-form').classList.add('hidden')">Cancel</button>
-    </div>
-  </div>
-  <div id="recipe-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;"></div>
+  <div id="rv-header-root"></div>
+  <div id="rv-tabs-root"></div>
+  <div id="rv-content-root"></div>
+  <div id="rv-modal-root"></div>
 </section>
 
       <!-- WATCH -->
