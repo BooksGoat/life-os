@@ -805,7 +805,9 @@
 </section>
 
       <!-- RECIPES -->
-      <section id="recipes" class="section">
+      <section id="recipes" class="section"
+        ondragover="event.preventDefault()"
+        ondrop="event.preventDefault();if(event.dataTransfer.files[0])parseEpub(event.dataTransfer.files[0])">
   <div id="rv-header-root"></div>
   <div id="rv-tabs-root"></div>
   <div id="rv-content-root"></div>
