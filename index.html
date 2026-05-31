@@ -2159,73 +2159,75 @@ const WORKOUT_PLAN = [
   {
     day: 0, name: 'Monday', label: 'MON',
     title: 'Heavy Lower Body A',
-    goal: 'Maximal leg strength — squat pattern',
+    goal: 'Metabolic Clearing — squat-pattern strength',
     exercises: [
-      { name: 'Barbell Back Squats', sets: 4, reps: '5-6', weight: '80-90 kg', rest: '3min', cardio: false },
-      { name: 'Romanian Deadlifts (RDLs)', sets: 3, reps: '8-10', weight: '70-80 kg', rest: '2.5min', cardio: false },
-      { name: 'Bulgarian Split Squats', sets: 3, reps: '8-10/leg', weight: '20-25 kg', rest: '2min', cardio: false },
-      { name: 'Core Stability (Plank / Ab Wheel)', sets: 3, reps: '45-60 sec', weight: 'bodyweight', rest: '1min', cardio: false }
+      { name: 'Barbell Back Squats', sets: 3, reps: '5-8', rest: '3min', note: '8th rep is a true struggle', cardio: false },
+      { name: 'Romanian Deadlifts (RDLs)', sets: 3, reps: '8-10', rest: '2min', note: 'Deep hamstring stretch — build posterior chain', cardio: false },
+      { name: 'Bulgarian Split Squats', sets: 3, reps: '8-10/leg', rest: '2min', note: 'Hold dumbbells — unilateral stability, quad isolation', cardio: false },
+      { name: 'Weighted Calf Raises', sets: 3, reps: '12-15', rest: '90sec', note: '', cardio: false }
     ]
   },
   {
     day: 1, name: 'Tuesday', label: 'TUE',
     title: 'Heavy Upper Body A',
-    goal: 'Horizontal push + pull strength',
+    goal: 'Structural Frame — horizontal push + pull',
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', weight: '75-85 kg', rest: '3min', cardio: false },
-      { name: 'Heavy Barbell Rows', sets: 4, reps: '6-8', weight: '65-75 kg', rest: '2.5min', cardio: false },
-      { name: 'Overhead Dumbbell Press', sets: 3, reps: '8-10', weight: '20-25 kg/hand', rest: '2min', cardio: false },
-      { name: 'Weighted Dips', sets: 3, reps: '8-10', weight: '+10-15 kg', rest: '2min', cardio: false }
+      { name: 'Flat Barbell Bench Press', sets: 3, reps: '5-8', rest: '3min', note: '', cardio: false },
+      { name: 'Heavy Barbell Rows', sets: 3, reps: '6-8', rest: '2min', note: 'Pull to sternum for back thickness', cardio: false },
+      { name: 'Standing Overhead Barbell Press (OHP)', sets: 3, reps: '6-8', rest: '2min', note: 'Capped shoulders + core bracing', cardio: false },
+      { name: 'Weighted Dips', sets: 3, reps: '8-10', rest: '2min', note: '', cardio: false }
     ]
   },
   {
     day: 2, name: 'Wednesday', label: 'WED',
-    title: 'Active Rest & Recovery',
-    goal: 'Low-intensity movement, mobility, nervous system reset',
+    title: 'Aerobic Base & Core Density',
+    goal: '45-min aerobic block — max fat oxidation + core stiffness',
     exercises: [
-      { name: 'Low-Intensity Walking', sets: 1, reps: '30-45 min', weight: 'Zone 1', rest: '', cardio: true },
-      { name: 'Deep Mobility Work', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false },
-      { name: 'Light Restorative Yoga', sets: 1, reps: '20-30 min', weight: 'bodyweight', rest: '', cardio: false }
+      { name: 'Threshold Run @ 13.5 km/h', sets: 1, reps: '20 min continuous', rest: '', note: 'Sustained threshold — do not drop pace', cardio: true },
+      { name: 'Zone 2 Flush @ 12.0 km/h', sets: 1, reps: '25 min continuous', rest: '', note: 'Immediately after threshold run — maximize fat oxidation', cardio: true },
+      { name: 'Hanging Leg Raises', sets: 3, reps: 'to failure', rest: '90sec', note: 'Legs straight — lower abdominal density', cardio: false },
+      { name: 'Weighted Planks', sets: 3, reps: '60 sec', rest: '90sec', note: 'Weight plate on back — total core stiffness', cardio: false }
     ]
   },
   {
     day: 3, name: 'Thursday', label: 'THU',
     title: 'Heavy Lower Body B',
-    goal: 'Hip hinge strength + loaded carries',
+    goal: 'Power Production — CNS activation + growth hormone release',
     exercises: [
-      { name: 'Conventional / Sumo Deadlifts', sets: 4, reps: '4-5', weight: '100-120 kg', rest: '3-4min', cardio: false },
-      { name: 'Barbell Hack Squats', sets: 3, reps: '8-10', weight: '60-70 kg', rest: '2.5min', cardio: false },
-      { name: 'Walking Lunges (Barbell)', sets: 3, reps: '10-12/leg', weight: '30-40 kg', rest: '2min', cardio: false },
-      { name: "Loaded Farmer's Carries", sets: 4, reps: '40m', weight: '35-40 kg/hand', rest: '90sec', cardio: false }
+      { name: 'Conventional / Sumo Deadlifts', sets: 3, reps: '3-5', rest: '3-4min', note: 'Pure CNS activation and growth hormone release', cardio: false },
+      { name: 'Barbell Hack Squats (or Leg Press)', sets: 3, reps: '8-10', rest: '2min', note: '', cardio: false },
+      { name: 'Dumbbell Walking Lunges', sets: 3, reps: '10-12 steps/leg', rest: '2min', note: '', cardio: false }
     ]
   },
   {
     day: 4, name: 'Friday', label: 'FRI',
     title: 'Heavy Upper Body B',
-    goal: 'Vertical push + pull strength',
+    goal: 'Pulling Engine & Arms — vertical pull + upper chest + arms',
     exercises: [
-      { name: 'Barbell Overhead Press', sets: 4, reps: '5-6', weight: '45-55 kg', rest: '3min', cardio: false },
-      { name: 'Weighted Pull-ups / Lat Pulldowns', sets: 4, reps: '6-8', weight: '+10-15 kg / 70-80 kg', rest: '2.5min', cardio: false },
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', weight: '22-27 kg/hand', rest: '2min', cardio: false },
-      { name: 'Arm Accents (Curls + Tricep)', sets: 3, reps: '12-15', weight: '', rest: '90sec', cardio: false }
+      { name: 'Weighted Pull-Ups', sets: 3, reps: '5-8', rest: '3min', note: '', cardio: false },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '8-10', rest: '2min', note: 'Upper chest shelf aesthetic', cardio: false },
+      { name: 'Barbell Bicep Curls', sets: 3, reps: '10-12', rest: '90sec', note: '', cardio: false },
+      { name: 'Overhead Triceps Extensions', sets: 3, reps: '10-12', rest: '90sec', note: '', cardio: false }
     ]
   },
   {
     day: 5, name: 'Saturday', label: 'SAT',
-    title: 'Active Rest & Systemic Recovery',
-    goal: 'Full systemic rest — walking and mobility only',
+    title: 'VO2 Max Engine & Fighter Core',
+    goal: 'Maximum cardiovascular ceiling + trap/core finishing',
     exercises: [
-      { name: 'Light Walking', sets: 1, reps: '30-60 min', weight: 'Zone 1', rest: '', cardio: true },
-      { name: 'Mobility / Stretching', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false }
+      { name: 'Warm-Up Jog', sets: 1, reps: '5-10 min', rest: '', note: 'Light jog — prep Achilles and hamstrings', cardio: true },
+      { name: 'All-Out Sprints @ 16.5–17.5 km/h', sets: 6, reps: '1 min each', rest: '1–1.5 min walk between', note: 'Maximum effort every round — full heart-rate drop before next', cardio: true },
+      { name: 'Cool Down Walk', sets: 1, reps: '10 min', rest: '', note: 'Flush lactic acid', cardio: true },
+      { name: "Heavy Kettlebell Farmer's Carries", sets: 4, reps: '40 meters', rest: '90sec', note: 'Heaviest kettlebells you can hold — caps traps, unbreakable core', cardio: false }
     ]
   },
   {
     day: 6, name: 'Sunday', label: 'SUN',
-    title: 'Full Rest & Systemic Recovery',
-    goal: 'Complete rest — no structured training',
+    title: 'Absolute Systemic Rest',
+    goal: 'Zero structured exercise — cortisol at rock bottom for Day 1',
     exercises: [
-      { name: 'Light Walking (optional)', sets: 1, reps: '20-30 min', weight: 'Zone 1', rest: '', cardio: true },
-      { name: 'Yoga / Breathwork (optional)', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false }
+      { name: 'Walking (optional)', sets: 1, reps: 'as desired', rest: '', note: 'Zero lifting, zero running', cardio: true },
+      { name: 'Deep Stretching / Mobility', sets: 1, reps: 'as desired', rest: '', note: 'Full CNS recovery', cardio: false }
     ]
   }
 ];
@@ -2279,7 +2281,8 @@ function renderWorkoutPlan() {
     const isCardio = ex.cardio;
     const accentColor = isCardio ? 'var(--green)' : 'var(--purple)';
     const badge = isCardio ? `<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(34,211,160,0.15);color:var(--green);font-weight:700;margin-left:8px;">CARDIO</span>` : '';
-    const planLabel = `${ex.sets}×${ex.reps}${ex.weight ? ' @ ' + ex.weight : ''}${ex.rest ? ' · rest ' + ex.rest : ''}`;
+    const planLabel = `${ex.sets}×${ex.reps}${ex.rest ? ' · rest ' + ex.rest : ''}`;
+    const noteHtml = ex.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;">${esc(ex.note)}</div>` : '';
 
     // Logged set chips
     const setChips = twEx.sets.map((set, si) => {
@@ -2300,7 +2303,7 @@ function renderWorkoutPlan() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
         <div>
           <span style="font-size:14px;font-weight:600;color:var(--text);">${esc(ex.name)}</span>${badge}
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(planLabel)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(planLabel)}</div>${noteHtml}
         </div>
       </div>
       <div id="wt-sets-${activeDay}-${ei}" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${setChips}</div>
