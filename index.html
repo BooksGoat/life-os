@@ -871,6 +871,62 @@
     .more-sheet-btn span { font-size: 22px; }
     .more-sheet-btn:hover { background: rgba(255,255,255,0.08); }
 
+    /* ── DESKTOP SIDEBAR RAIL ───────────────────────────── */
+    #side-rail {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 64px;
+      background: #0d0d1a;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      z-index: 500;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      gap: 4px;
+      overflow: hidden;
+      transition: width 0.2s ease;
+    }
+    .rail-logo {
+      font-size: 22px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 6px #8a5cf6);
+    }
+    .rail-divider {
+      width: 32px; height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 8px 0;
+    }
+    .rail-btn {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      background: none; border: none; border-radius: 10px;
+      cursor: pointer; color: #5a5575;
+      transition: background 0.15s, color 0.15s;
+      position: relative;
+    }
+    .rail-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+    .rail-btn.active { background: rgba(138,92,246,0.15); color: var(--purple); }
+    .rail-btn[data-tab="health"].active  { background: rgba(34,211,160,0.12); color: #22d3a0; }
+    .rail-btn[data-tab="recipes"].active { background: rgba(240,144,48,0.12); color: #f09030; }
+    .rail-btn[data-tab="watch"].active   { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .rail-btn[data-tab="books"].active   { background: rgba(244,114,182,0.12); color: #f472b6; }
+
+    @media (min-width: 769px) {
+      #side-rail { display: flex; }
+      #main { margin-left: 64px; }
+      #header { margin-left: 64px; }
+      #bottom-tab-bar { display: none !important; }
+    }
+    @media (min-width: 1100px) {
+      #side-rail { width: 200px; align-items: flex-start; padding: 16px 12px; }
+      .rail-btn { width: 100%; justify-content: flex-start; gap: 12px; padding: 0 12px; font-size: 18px; }
+      .rail-btn::after { content: attr(title); font-size: 13px; font-weight: 600; }
+      #main { margin-left: 200px; }
+      #header { margin-left: 200px; }
+    }
+
   </style>
 </head>
 <body>
@@ -895,6 +951,20 @@
 
   <!-- ── MAIN ─────────────────────────────────────────────────── -->
   <div id="main">
+
+    <!-- DESKTOP SIDEBAR RAIL -->
+    <nav id="side-rail">
+      <div class="rail-logo">☀</div>
+      <button class="rail-btn active" data-tab="today"   onclick="switchTab('today')"   title="Today">🏠</button>
+      <button class="rail-btn"        data-tab="health"  onclick="switchTab('health')"  title="Workout">💪</button>
+      <button class="rail-btn"        data-tab="recipes" onclick="switchTab('recipes')" title="Recipes">🍳</button>
+      <button class="rail-btn"        data-tab="watch"   onclick="switchTab('watch')"   title="Watch">📺</button>
+      <div class="rail-divider"></div>
+      <button class="rail-btn"        data-tab="mind"    onclick="switchTab('mind')"    title="Mind">🧘</button>
+      <button class="rail-btn"        data-tab="books"   onclick="switchTab('books')"   title="Books">📚</button>
+      <button class="rail-btn"        data-tab="ideas"   onclick="switchTab('ideas')"   title="Ideas">💡</button>
+      <button class="rail-btn"        data-tab="family"  onclick="switchTab('family')"  title="Family">👨‍👩‍👧</button>
+    </nav>
 
     <!-- BOTTOM TAB BAR (mobile) -->
     <nav id="bottom-tab-bar">
