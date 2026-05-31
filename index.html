@@ -820,6 +820,57 @@
       border-left: 3px solid var(--section-accent, var(--purple));
     }
 
+    /* ── BOTTOM TAB BAR (mobile) ────────────────────────── */
+    #bottom-tab-bar {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 64px;
+      background: #0d0d1a;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      z-index: 1000;
+      align-items: stretch;
+      justify-content: space-around;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 4px;
+      color: #5a5575;
+      transition: color 0.15s;
+    }
+    .tab-btn .tab-icon { font-size: 20px; line-height: 1; }
+    .tab-btn .tab-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+    .tab-btn.active { color: var(--tab-accent, #8a5cf6); }
+    .tab-btn[data-tab="today"].active    { --tab-accent: #8a5cf6; }
+    .tab-btn[data-tab="health"].active   { --tab-accent: #22d3a0; }
+    .tab-btn[data-tab="recipes"].active  { --tab-accent: #f09030; }
+    .tab-btn[data-tab="watch"].active    { --tab-accent: #60a5fa; }
+    .tab-btn[data-tab="more"].active     { --tab-accent: #8a5cf6; }
+
+    @media (max-width: 768px) {
+      #bottom-tab-bar { display: flex; }
+      #header { display: none !important; }
+      #main { padding-bottom: 64px; }
+      #side-rail { display: none !important; }
+    }
+
+    .more-sheet-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 8px; color: var(--text); font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+    .more-sheet-btn span { font-size: 22px; }
+    .more-sheet-btn:hover { background: rgba(255,255,255,0.08); }
+
   </style>
 </head>
 <body>
@@ -844,6 +895,42 @@
 
   <!-- ── MAIN ─────────────────────────────────────────────────── -->
   <div id="main">
+
+    <!-- BOTTOM TAB BAR (mobile) -->
+    <nav id="bottom-tab-bar">
+      <button class="tab-btn active" data-tab="today" onclick="switchTab('today')">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">Today</span>
+      </button>
+      <button class="tab-btn" data-tab="health" onclick="switchTab('health')">
+        <span class="tab-icon">💪</span>
+        <span class="tab-label">Workout</span>
+      </button>
+      <button class="tab-btn" data-tab="recipes" onclick="switchTab('recipes')">
+        <span class="tab-icon">🍳</span>
+        <span class="tab-label">Recipes</span>
+      </button>
+      <button class="tab-btn" data-tab="watch" onclick="switchTab('watch')">
+        <span class="tab-icon">📺</span>
+        <span class="tab-label">Watch</span>
+      </button>
+      <button class="tab-btn" data-tab="more" onclick="openMoreSheet()">
+        <span class="tab-icon" style="font-size:18px;letter-spacing:-2px;">•••</span>
+        <span class="tab-label">More</span>
+      </button>
+    </nav>
+
+    <!-- MORE SLIDE-UP SHEET -->
+    <div id="more-sheet-overlay" style="display:none;position:fixed;inset:0;z-index:1001;background:rgba(0,0,0,0.5);" onclick="closeMoreSheet()"></div>
+    <div id="more-sheet" style="display:none;position:fixed;bottom:64px;left:0;right:0;z-index:1002;background:#111120;border-radius:20px 20px 0 0;border-top:1px solid rgba(255,255,255,0.1);padding:20px 16px 24px;">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px;"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <button class="more-sheet-btn" onclick="closeMoreSheet();switchTab('mind')"><span>🧘</span>Mind</button>
+        <button class="more-sheet-btn" onclick="closeMoreSheet();switchTab('books')"><span>📚</span>Books</button>
+        <button class="more-sheet-btn" onclick="closeMoreSheet();switchTab('ideas')"><span>💡</span>Ideas</button>
+        <button class="more-sheet-btn" onclick="closeMoreSheet();switchTab('family')"><span>👨‍👩‍👧</span>Family</button>
+      </div>
+    </div>
 
     <!-- HEADER -->
     <header id="header">
