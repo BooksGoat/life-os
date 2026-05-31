@@ -4025,6 +4025,7 @@ function pickMealType(detectedType, recipeTitle) {
       { id:'dinner',    label:'🌙 Dinner' },
       { id:'snack',     label:'🍿 Snack' },
       { id:'dessert',   label:'🍰 Dessert' },
+      { id:'soup',      label:'🍲 Soup' },
       { id:'salad',     label:'🥗 Salad' },
       { id:'dressings', label:'🫙 Dressings' },
       { id:'drinks',    label:'🍹 Drinks' },
@@ -4571,13 +4572,14 @@ const MEAL_TABS = [
   { id: 'dinner',    label: 'Dinner',    emoji: '🌙' },
   { id: 'snack',     label: 'Snacks',    emoji: '🍿' },
   { id: 'dessert',   label: 'Desserts',  emoji: '🍰' },
+  { id: 'soup',      label: 'Soups',     emoji: '🍲' },
   { id: 'salad',     label: 'Salads',    emoji: '🥗' },
   { id: 'dressings', label: 'Dressings', emoji: '🫙' },
   { id: 'drinks',    label: 'Drinks',    emoji: '🍹' },
 ];
 
 const MEAL_PLACEHOLDER_EMOJI = {
-  breakfast: '🍳', lunch: '🥗', dinner: '🍝', snack: '🍿', dessert: '🍰', salad: '🥗', dressings: '🫙', drinks: '🥤', default: '🍽️'
+  breakfast: '🍳', lunch: '🥗', dinner: '🍝', snack: '🍿', dessert: '🍰', soup: '🍲', salad: '🥗', dressings: '🫙', drinks: '🥤', default: '🍽️'
 };
 
 function getFilteredRecipes() {
