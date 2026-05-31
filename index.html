@@ -12,6 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,28 +20,42 @@
     /* ─── CSS RESET ─────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ─── GOLDEN HOUR TOKENS ────────────────────────────────────── */
+    /* ─── DESIGN TOKENS ─────────────────────────────────────────── */
     :root {
-      --gold:   #f5c842;
-      --amber:  #e8900a;
-      --dark:   #1a0f00;
-      --darker: #110900;
-      --text:   #fde8b0;
-      --muted:  #c8840a;
-      --border: rgba(255,180,30,0.18);
-      --panel:  rgba(255,160,30,0.07);
-      --amber-20: rgba(232,144,10,0.2);
-      --amber-15: rgba(232,144,10,0.15);
-      --amber-40: rgba(232,144,10,0.4);
-      --amber-dark: #c87020;
-      --gold-8: rgba(245,200,66,0.08);
+      /* Backgrounds */
+      --bg:       #07070f;
+      --darker:   #07070f;
+      --dark:     #0d0d1a;
+      --s1:       #0d0d1a;
+      --s2:       #111120;
+      --s3:       #16162a;
+      /* Borders & surfaces */
+      --border:   rgba(255,255,255,0.07);
+      --border-h: rgba(255,255,255,0.14);
+      --panel:    rgba(255,255,255,0.04);
+      /* Typography */
+      --text:     #ede8ff;
+      --muted:    #5a5575;
+      /* Accents */
+      --purple:   #8a5cf6;
+      --amber:    #f09030;
+      --green:    #22d3a0;
+      --pink:     #f472b6;
+      --blue:     #60a5fa;
+      /* Legacy aliases so old var() refs still work */
+      --gold:          #8a5cf6;
+      --amber-20:      rgba(138,92,246,0.20);
+      --amber-15:      rgba(138,92,246,0.15);
+      --amber-40:      rgba(138,92,246,0.40);
+      --amber-dark:    #7c3aed;
+      --gold-8:        rgba(138,92,246,0.08);
     }
 
     /* ─── BASE ──────────────────────────────────────────────────── */
     body {
-      background: var(--darker);
+      background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       height: 100vh;
       overflow: hidden;
     }
@@ -283,15 +298,15 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--amber), var(--amber-dark));
-      border-color: var(--amber);
-      color: #1a0f00;
+      background: linear-gradient(135deg, #8a5cf6, #7c3aed);
+      border-color: rgba(138,92,246,0.5);
+      color: #fff;
       font-weight: 600;
     }
 
     .btn-primary:hover {
-      opacity: 0.9;
-      background: linear-gradient(135deg, var(--amber), var(--amber-dark));
+      opacity: 0.88;
+      background: linear-gradient(135deg, #9b6dff, #8a5cf6);
     }
 
     /* ─── INPUTS ────────────────────────────────────────────────── */
@@ -313,7 +328,8 @@
     input:not(#global-search):focus,
     textarea:focus,
     select:focus {
-      border-color: var(--amber);
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(138,92,246,0.10);
     }
 
     select option {
@@ -326,9 +342,9 @@
       padding: 2px 10px;
       border-radius: 20px;
       font-size: 11px;
-      background: rgba(232,144,10,0.15);
-      border: 1px solid rgba(232,144,10,0.3);
-      color: var(--amber);
+      background: rgba(138,92,246,0.12);
+      border: 1px solid rgba(138,92,246,0.25);
+      color: #a78bfa;
       margin: 2px;
     }
 
@@ -366,7 +382,7 @@
     }
 
     #content::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,180,30,0.35);
+      background: rgba(138,92,246,0.35);
     }
 
     /* ── TODAY SECTION SHORTCUTS ────────────────────────── */
@@ -460,6 +476,12 @@
       line-height: 1; transition: color 0.15s;
     }
     .rv-book-chip-del:hover { color: #f472b6; }
+    .rv-book-chip-reimport {
+      background: none; border: none; color: #5a5575;
+      cursor: pointer; font-size: 14px; padding: 0 2px;
+      line-height: 1; transition: color 0.15s;
+    }
+    .rv-book-chip-reimport:hover { color: #8a5cf6; }
 
     .rv-tabs {
       display: flex; gap: 2px;
@@ -584,7 +606,50 @@
       color: #aaa; padding: 2px 7px; letter-spacing: 0.06em;
       max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .rv-card-body { padding: 12px 14px 14px; }
+    .rv-card { position: relative; }
+    .rv-card-note-btn {
+      position: absolute; bottom: 10px; right: 10px; z-index: 3;
+      background: rgba(138,92,246,0.1); border: 1px solid rgba(138,92,246,0.2);
+      color: #8a5cf6; border-radius: 6px; padding: 3px 7px;
+      font-size: 10px; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .rv-card-note-btn:hover { background: rgba(138,92,246,0.22); color: #a87cf8; }
+    .rv-card-note-btn.has-note { color: #22d3a0; border-color: rgba(34,211,160,0.3); background: rgba(34,211,160,0.08); }
+    .rv-card-share-btn {
+      position: absolute; bottom: 10px; right: 44px; z-index: 3;
+      background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.2);
+      color: #25D366; border-radius: 6px; padding: 3px 7px;
+      font-size: 10px; cursor: pointer; transition: background .15s, color .15s;
+    }
+    .rv-card-share-btn:hover { background: rgba(37,211,102,0.22); color: #44ee80; }
+    .rv-card-del-btn {
+      position: absolute; top: 8px; left: 8px; z-index: 4;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12);
+      color: #f472b6; border-radius: 6px; padding: 2px 7px;
+      font-size: 11px; cursor: pointer; transition: background .15s, color .15s; opacity: 0;
+    }
+    .rv-card:hover .rv-card-del-btn { opacity: 1; }
+    .rv-card-del-btn:hover { background: rgba(244,114,182,0.25); color: #ff6eb0; border-color: rgba(244,114,182,0.4); }
+    .rv-modal-share-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(37,211,102,0.12); border: 1px solid rgba(37,211,102,0.3);
+      color: #25D366; border-radius: 8px; padding: 7px 14px;
+      font-size: 13px; cursor: pointer; transition: background .15s;
+      margin-top: 16px;
+    }
+    .rv-modal-share-btn:hover { background: rgba(37,211,102,0.22); }
+    .rv-modal-notes { margin-top: 28px; }
+    .rv-modal-notes-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .rv-modal-notes textarea {
+      width: 100%; min-height: 80px; box-sizing: border-box;
+      background: #0d0d1a; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #ede8ff; padding: 10px 12px;
+      font: 13px/1.6 Inter, sans-serif; resize: vertical; outline: none;
+      transition: border-color .15s;
+    }
+    .rv-modal-notes textarea:focus { border-color: rgba(138,92,246,0.4); }
+    .rv-modal-notes textarea::placeholder { color: #3a3560; }
+    .rv-card-body { padding: 12px 14px 36px; }
     .rv-card-name {
       font-size: 13px; font-weight: 700; margin-bottom: 3px;
       color: #ddd0f0;
@@ -601,7 +666,7 @@
     }
     .rv-tag-meal { background: rgba(240,144,48,0.1); color: #d07030; border: 1px solid rgba(240,144,48,0.2); }
     .rv-tag-siml { background: rgba(138,92,246,0.1); color: #9a7cf6; border: 1px solid rgba(138,92,246,0.2); }
-    .rv-tag-serves { background: rgba(255,255,255,0.04); color: #555; border: 1px solid rgba(255,255,255,0.08); }
+    .rv-tag-serves { background: rgba(34,211,160,0.08); color: #22d3a0; border: 1px solid rgba(34,211,160,0.2); }
 
     .rv-modal-overlay {
       position: fixed; inset: 0; z-index: 1000;
@@ -691,6 +756,70 @@
       .rv-modal-content { padding: 20px 16px 28px; }
       .rv-modal-title { font-size: 20px; }
     }
+    /* ── Supplements Card ── */
+    .supp-slot { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:10px; border-left:3px solid var(--slot-color,var(--purple)); }
+    .supp-slot-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .supp-time-badge { font-size:11px; font-weight:700; letter-spacing:.04em; padding:3px 9px; border-radius:5px; white-space:nowrap; }
+    .supp-slot-when { color:var(--muted); font-size:12px; }
+    .supp-pills { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+    .supp-pill { font-size:12px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:6px; padding:4px 10px; color:var(--text); }
+    .supp-pill b { color:#ede8ff; }
+    .supp-pill em { color:var(--muted); font-style:normal; font-size:11px; margin-left:3px; }
+    .supp-note { font-size:12px; color:var(--muted); border-top:1px solid var(--border); padding-top:8px; line-height:1.5; }
+    .supp-alarm { margin-left:auto; color:#22d3a0; font-size:14px; font-weight:700; white-space:nowrap; letter-spacing:.01em; }
+    .supp-rules-card { border:1px solid rgba(244,114,182,0.25) !important; background:rgba(244,114,182,0.04) !important; }
+    #mealtype-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center; }
+    .mealtype-picker-box { background:#111120;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px 24px;max-width:340px;width:90%;text-align:center; }
+    .mealtype-picker-title { font-size:14px;color:var(--muted);margin-bottom:6px; }
+    .mealtype-picker-recipe { font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;line-height:1.4; }
+    .mealtype-picker-btns { display:flex;flex-wrap:wrap;gap:10px;justify-content:center; }
+    .mealtype-picker-btn { padding:10px 18px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:14px;cursor:pointer;transition:all .15s; }
+    .mealtype-picker-btn:hover,.mealtype-picker-btn.active { background:var(--purple);border-color:var(--purple);color:#fff; }
+    /* ── v2 DESIGN TOKENS ──────────────────────────────── */
+    :root {
+      --accent-today: #8a5cf6;
+      --accent-workout: #22d3a0;
+      --accent-recipes: #f09030;
+      --accent-watch: #60a5fa;
+      --accent-supplements: #8a5cf6;
+      --accent-books: #f472b6;
+      --accent-mind: #22d3a0;
+      --accent-ideas: #f09030;
+      --radius-card: 12px;
+    }
+
+    /* ── v2 CARD BASE ───────────────────────────────────── */
+    .card {
+      border-radius: var(--radius-card) !important;
+      transition: background 0.15s, box-shadow 0.15s !important;
+    }
+    .card:hover {
+      background: rgba(255,255,255,0.07) !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+    }
+
+    /* ── v2 SECTION ACCENT HEADERS ─────────────────────── */
+    .section-accent-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .section-title-v2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      padding-left: 16px;
+      border-left: 3px solid var(--section-accent, var(--purple));
+    }
+
   </style>
 </head>
 <body>
@@ -829,10 +958,10 @@
         ondragenter="event.preventDefault();document.getElementById('rv-drop-overlay').style.display='flex'"
         ondragover="event.preventDefault()"
         ondragleave="if(!document.getElementById('recipes').contains(event.relatedTarget))document.getElementById('rv-drop-overlay').style.display='none'"
-        ondrop="event.preventDefault();document.getElementById('rv-drop-overlay').style.display='none';if(event.dataTransfer.files[0])parseEpub(event.dataTransfer.files[0])">
+        ondrop="event.preventDefault();document.getElementById('rv-drop-overlay').style.display='none';if(event.dataTransfer.files[0])handleBookFile(event.dataTransfer.files[0])">
   <div id="rv-drop-overlay" style="display:none;position:fixed;inset:0;background:rgba(138,92,246,0.18);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;pointer-events:none;">
     <div style="font-size:56px;">📥</div>
-    <div style="font-size:20px;font-weight:800;color:#fff;">Drop EPUB to import</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;">Drop EPUB or PDF to import</div>
   </div>
   <div id="rv-header-root"></div>
   <div id="rv-tabs-root"></div>
@@ -878,21 +1007,10 @@
     <button class="btn" id="h-tab-weight" onclick="switchHealthTab('weight')">Weight</button>
     <button class="btn" id="h-tab-meals" onclick="switchHealthTab('meals')">Meals</button>
     <button class="btn" id="h-tab-water" onclick="switchHealthTab('water')">Water</button>
+    <button class="btn" id="h-tab-supplements" onclick="switchHealthTab('supplements')">💊 Supplements</button>
   </div>
   <div id="h-panel-workout">
-    <div class="card" style="margin-bottom:16px;">
-      <div class="label" style="margin-bottom:10px;">Log Workout</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:12px;align-items:end;">
-        <div><label class="label">Type</label>
-          <select id="w-type"><option>Gym</option><option>Yoga</option><option>Run</option><option>Home</option><option>Swim</option><option>Other</option></select>
-        </div>
-        <div><label class="label">Duration (min)</label><input type="number" id="w-duration" min="1" max="300" placeholder="45"></div>
-        <div><label class="label">Date</label><input type="date" id="w-date"></div>
-        <div><label class="label">Notes</label><input type="text" id="w-notes" placeholder="Chest day, 5km…"></div>
-      </div>
-      <button class="btn btn-primary" style="margin-top:12px;" onclick="logWorkout()">Log Workout</button>
-    </div>
-    <div id="workout-history"></div>
+    <div id="workout-tracker-root"></div>
   </div>
   <div id="h-panel-weight" class="hidden">
     <div class="card" style="margin-bottom:16px;">
@@ -925,6 +1043,320 @@
       <button class="btn btn-primary" style="font-size:18px;padding:14px 32px;" onclick="addWater()">+ Add Glass 💧</button>
       <button class="btn" style="margin-left:12px;" onclick="resetWater()">Reset</button>
     </div>
+  </div>
+  <div id="h-panel-supplements" class="hidden">
+
+    <!-- Critical Rules -->
+    <div class="card supp-rules-card" style="margin-bottom:16px;">
+      <div class="label" style="color:#f472b6;margin-bottom:14px;">⚠ Critical Timing Rules — Never Violate</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(244,114,182,0.2);color:#f472b6;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">1</span>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;"><b style="color:var(--text);">Sterol Rule:</b> Plant Sterols block fat-soluble vitamin (D3, Omega-3) absorption. Never take within 3 hours of morning stack.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(244,114,182,0.2);color:#f472b6;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">2</span>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;"><b style="color:var(--text);">Carnitine/TMAO Rule:</b> L-Carnitine converts to artery-damaging TMAO in the gut. Never take without Aged Garlic Extract.</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(244,114,182,0.2);color:#f472b6;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">3</span>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;"><b style="color:var(--text);">Sodium Rule:</b> Plain water during 60+ min training dilutes plasma sodium. Always use high-sodium electrolyte matrix during sessions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day Toggle -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon–Sat)</button>
+      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🛌 Rest Day (Sun)</button>
+    </div>
+
+    <!-- Training Day Schedule -->
+    <div id="supp-panel-training">
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKFAST</span>
+          <span class="supp-slot-when">The Fast-Breaker</span>
+          <span class="supp-alarm">⏰ 10:00 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
+          <span class="supp-pill">Omega-3 EPA/DHA <b>1,000–2,000 mg</b></span>
+          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
+        </div>
+        <div class="supp-note">Meal must contain dietary fat (eggs, olive oil, avocado) — fat-soluble D3 + Omega-3 cannot absorb without it.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#60a5fa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 MID-DAY BLOCKADE</span>
+          <span class="supp-slot-when">30 min before pre-workout lunch — empty stomach</span>
+          <span class="supp-alarm">⏰ 12:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 1</em></span>
+        </div>
+        <div class="supp-note">Lines the gut before the 1:00 PM meal. Intercepts bile acids, upregulates liver LDL receptors. Must be on empty stomach — food kills the effect.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🍽 PRE-WORKOUT LUNCH</span>
+          <span class="supp-slot-when">Light Mediterranean meal — lean protein + complex carbs</span>
+          <span class="supp-alarm">⏰ 1:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">L-Carnitine <b>2,000 mg</b> <em>end of meal</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">Aged Garlic Extract <b>600–1,200 mg</b> <em>end of meal</em></span>
+        </div>
+        <div class="supp-note">Sterols mix with food (blocks cholesterol absorption). L-Carnitine + Garlic taken right at end of meal — loads bloodstream at the 60-min pre-workout window. TMAO rule: never L-Carnitine without Garlic.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f472b6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(244,114,182,0.15);color:#f472b6;">🏃 TRAINING BLOCK</span>
+          <span class="supp-slot-when">Sip continuously throughout session</span>
+          <span class="supp-alarm">⏰ 2:00–3:15 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Electrolyte Matrix — Sodium <b>500–1,000 mg</b> in water</span>
+        </div>
+        <div class="supp-note">Defend plasma volume throughout heavy barbell work and treadmill. Resting sodium at 131 mmol/L — plain water during 60+ min sessions dilutes it further. Non-negotiable.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#a78bfa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🥛 POST-WORKOUT REFUEL</span>
+          <span class="supp-slot-when">High-protein shake or snack — no supplements</span>
+          <span class="supp-alarm">⏰ 4:00 PM</span>
+        </div>
+        <div class="supp-note" style="border-top:none;padding-top:0;">Trigger mTOR and muscle protein synthesis after 70–75kg barbell sessions. No supplements here — this window is purely for anabolic recovery nutrition.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#8a5cf6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">💊 EVENING BLOCKADE</span>
+          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
+          <span class="supp-alarm">⏰ 7:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+        </div>
+        <div class="supp-note">Second blockade before the final meal of the day. Critical for blunting evening carbohydrate glucose spikes. Empty stomach required.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#7c3aed;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">🌙 DINNER</span>
+          <span class="supp-slot-when">Final meal — finish by 8:00 PM sharp</span>
+          <span class="supp-alarm">⏰ 7:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 2 — during meal</em></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 2</em></span>
+        </div>
+        <div class="supp-note">Mix Sterols with food — blocks final dietary cholesterol absorption. Amla sustains endothelial protection overnight. Eating window closes at 8:00 PM.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ 14-HOUR FAST BEGINS</span>
+          <span class="supp-slot-when">Zero calories — plain water or herbal tea only</span>
+          <span class="supp-alarm" style="color:#5a5575;">🕗 8:00 PM</span>
+        </div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow. Ashwagandha at 10:00 PM is safe — zero calories, does not break autophagy.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.3);color:#a09ab8;">🌑 NIGHT STACK</span>
+          <span class="supp-slot-when">During the fast — empty stomach</span>
+          <span class="supp-alarm">⏰ 10:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
+        </div>
+        <div class="supp-note">Zero calories — does not break the fast or autophagy. Lowers CNS stress, blunts post-training cortisol, optimises sleep architecture. Cycle: 8–12 weeks on → mandatory 2–4 weeks off.</div>
+      </div>
+
+    </div>
+
+    <!-- Rest Day (Sunday) Schedule -->
+    <div id="supp-panel-rest" class="hidden">
+      <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
+        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Sunday: same eating window (10 AM–8 PM), same blockade times. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no sodium drink</b>. No post-workout refuel slot.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKFAST</span>
+          <span class="supp-slot-when">The Fast-Breaker — with dietary fat</span>
+          <span class="supp-alarm">⏰ 10:00 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
+          <span class="supp-pill">Omega-3 EPA/DHA <b>1,000–2,000 mg</b></span>
+          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine <b>2,000 mg</b> <em>rest day shift</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Aged Garlic Extract <b>600–1,200 mg</b> <em>rest day shift</em></span>
+        </div>
+        <div class="supp-note">L-Carnitine + Garlic move here since no workout window. Still take together — TMAO rule never has a day off. Lp(a) suppression requires daily saturation.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#60a5fa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 MID-DAY BLOCKADE</span>
+          <span class="supp-slot-when">30 min before lunch — empty stomach</span>
+          <span class="supp-alarm">⏰ 12:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 1</em></span>
+        </div>
+        <div class="supp-note">Lipid blockade never takes a day off. Same as training days.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.12);color:#22d3a0;">🍽 LUNCH</span>
+          <span class="supp-slot-when">During meal</span>
+          <span class="supp-alarm">⏰ 1:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
+        </div>
+        <div class="supp-note">Must mix with food. No L-Carnitine or Garlic here on rest days — already taken at breakfast.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.55;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⛔ NO TRAINING TODAY</span>
+          <span class="supp-slot-when">Skip sodium drink — plain water only</span>
+          <span class="supp-alarm" style="color:#5a5575;">2:00 PM</span>
+        </div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">No electrolyte matrix on rest days. Sodium rule only applies during active 60+ min training sessions.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#8a5cf6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">💊 EVENING BLOCKADE</span>
+          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
+          <span class="supp-alarm">⏰ 7:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+        </div>
+        <div class="supp-note">Same as training days. Empty stomach required.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#7c3aed;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">🌙 DINNER</span>
+          <span class="supp-slot-when">Final meal — finish by 8:00 PM sharp</span>
+          <span class="supp-alarm">⏰ 7:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 2 — during meal</em></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 2</em></span>
+        </div>
+        <div class="supp-note">Same as training days. Mix with food. Eating window closes at 8:00 PM.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ 14-HOUR FAST BEGINS</span>
+          <span class="supp-slot-when">Zero calories — plain water or herbal tea only</span>
+          <span class="supp-alarm" style="color:#5a5575;">🕗 8:00 PM</span>
+        </div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.3);color:#a09ab8;">🌑 NIGHT STACK</span>
+          <span class="supp-slot-when">During the fast — empty stomach</span>
+          <span class="supp-alarm">⏰ 10:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
+        </div>
+        <div class="supp-note">Zero calories — does not break the fast. Same as training days.</div>
+      </div>
+
+    </div>
+    <!-- Month 1 Onboarding -->
+    <div class="card" style="margin-top:20px;margin-bottom:16px;">
+      <div class="label" style="margin-bottom:6px;">📅 Part 3: Month 1 On-Ramp — Gut Adaptation Phase</div>
+      <div style="color:#f472b6;font-size:12px;font-weight:600;margin-bottom:12px;">⚠ Dropping the full matrix on Day 1 will cause severe gastrointestinal distress. Follow this strictly for the first 4 weeks.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:rgba(34,211,160,0.15);color:#22d3a0;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap;min-width:52px;text-align:center;">Week 1</span>
+          <div style="color:var(--text);font-size:13px;line-height:1.5;">Take ONLY the Morning Stack (D3+K2, Omega-3, Curcumin, Amla) + Intra-workout Sodium. Nothing else.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:rgba(96,165,250,0.15);color:#60a5fa;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap;min-width:52px;text-align:center;">Week 2</span>
+          <div style="color:var(--text);font-size:13px;line-height:1.5;">Add the Pre-Workout Stack (L-Carnitine + Aged Garlic) and Night Stack (Ashwagandha KSM-66). Still no fiber, no sterols, no Berberine.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:rgba(240,144,48,0.15);color:#f09030;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap;min-width:52px;text-align:center;">Week 3</span>
+          <div style="color:var(--text);font-size:13px;line-height:1.5;">Add the Blockade (Psyllium Husk, Berberine, Plant Sterols) — but ONLY ONCE PER DAY. Choose either the Lunch window OR the Dinner window, not both.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span style="background:rgba(138,92,246,0.15);color:#8a5cf6;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;white-space:nowrap;min-width:52px;text-align:center;">Week 4</span>
+          <div style="color:var(--text);font-size:13px;line-height:1.5;">Add the Second Blockade — now running full twice-daily protocol (Lunch AND Dinner). You are now on the complete maximum matrix. Do not reset.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cycling Rules -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="label" style="margin-bottom:14px;">🔄 Part 4: Long-Term Cycling Rules (Month 2 &amp; Beyond)</div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:14px;">Once Week 4 is complete, do not reset. Run the full matrix continuously with the following numbered exceptions.</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(96,165,250,0.15);color:#60a5fa;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">1</span>
+          <div>
+            <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:3px;">90-Day Bloodwork Benchmark</div>
+            <div style="color:var(--muted);font-size:12px;line-height:1.5;">At end of Month 3 (Day 90), pull comprehensive labs: Standard Lipid Panel · Lipoprotein(a) · ApoB (Apolipoprotein B) · HbA1c. Compare against baseline.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(244,114,182,0.15);color:#f472b6;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">2</span>
+          <div>
+            <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:3px;">Ashwagandha Reset (End of Month 3)</div>
+            <div style="color:var(--muted);font-size:12px;line-height:1.5;">After 90 days of continuous use, stop Ashwagandha entirely for 2–4 weeks to clear cortisol receptors. Resume after the break for another 90-day block. Prevents tolerance and anhedonia.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(240,144,48,0.15);color:#f09030;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">3</span>
+          <div>
+            <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:3px;">Berberine Shift (Month 4+)</div>
+            <div style="color:var(--muted);font-size:12px;line-height:1.5;">If Day 90 bloodwork confirms standard LDL and HbA1c are securely in target zones, shift Berberine to <b style="color:var(--text);">5 days on / 2 days off</b> (skip weekends). Berberine mimics fasting — taking weekends off allows the mTOR pathway to maximize muscle hypertrophy from 70–75kg barbell sessions.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="background:rgba(34,211,160,0.15);color:#22d3a0;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">4</span>
+          <div>
+            <div style="color:var(--text);font-size:13px;font-weight:600;margin-bottom:3px;">The "Never Cycle" List — 365 Days / Year</div>
+            <div style="color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:6px;">Vitamin D3+K2 · Omega-3s · Psyllium Husk · Plant Sterols · Amla · L-Carnitine · Aged Garlic Extract</div>
+            <div style="color:var(--muted);font-size:12px;line-height:1.5;">Stopping the mechanical blockers (Sterols + Psyllium) allows immediate dietary cholesterol absorption — no days off. Stopping L-Carnitine breaks the steady-state suppression of Lipoprotein(a).</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1122,7 +1554,7 @@ function defaultState() {
   return {
     recipes: [],
     watch: { movies: [], youtube: [] },
-    health: { workouts: [], weight: [], meals: [], water: { count: 0, date: '' } },
+    health: { workouts: [], weight: [], meals: [], water: { count: 0, date: '' }, workoutLogs: [], todayWorkout: null },
     mind: { sessions: [], bookmarks: [], gratitude: [] },
     books: [],
     family: { notes: [], milestones: [], reminders: [] },
@@ -1287,7 +1719,7 @@ function showToast(msg) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'toast';
-    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--amber);color:#1a0f00;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:opacity 0.3s;pointer-events:none;';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--purple);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:opacity 0.3s;pointer-events:none;box-shadow:0 4px 20px rgba(138,92,246,0.4);';
     document.body.appendChild(t);
   }
   t.textContent = msg;
@@ -1297,6 +1729,11 @@ function showToast(msg) {
 
 sectionRenderers['today'] = renderToday;
 renderToday();
+
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 
 // ── WATCH ────────────────────────────────────────────────
 const RECIPE_KEYWORDS = ['recipe','cook','how to make','homemade','bake','fry','grill','roast','curry','biryani','pasta','soup'];
@@ -1350,7 +1787,7 @@ function renderMovies() {
   grid.innerHTML = items.map(m => `
     <div class="card" style="padding:0;overflow:hidden;">
       ${m.poster ? `<img src="${m.poster}" style="width:100%;height:220px;object-fit:cover;">` :
-        `<div style="height:180px;background:radial-gradient(ellipse,rgba(232,144,10,0.15),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">🎬</div>`}
+        `<div style="height:180px;background:radial-gradient(ellipse,rgba(138,92,246,0.12),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">🎬</div>`}
       <div style="padding:10px;">
         <div style="font-size:13px;font-weight:600;line-height:1.3;">${m.title}</div>
         <div style="font-size:11px;color:var(--muted);margin:3px 0;">${m.year||''} ${m.rating_tmdb ? '★'+m.rating_tmdb : ''}</div>
@@ -1414,7 +1851,7 @@ function renderYoutube() {
   grid.innerHTML = items.map(v=>`
     <div class="card" style="padding:0;overflow:hidden;">
       ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:120px;object-fit:cover;">`:
-        `<div style="height:80px;background:rgba(232,144,10,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;">▶</div>`}
+        `<div style="height:80px;background:rgba(138,92,246,0.10);display:flex;align-items:center;justify-content:center;font-size:28px;">▶</div>`}
       <div style="padding:10px;">
         <div style="font-size:12px;font-weight:600;line-height:1.3;margin-bottom:6px;">${v.title}</div>
         <div style="display:flex;gap:6px;">
@@ -1437,48 +1874,269 @@ sectionRenderers['watch'] = () => { switchWatchTab(currentWatchTab); };
 let weightChart = null;
 
 function switchHealthTab(tab) {
-  ['workout','weight','meals','water'].forEach(t => {
+  ['workout','weight','meals','water','supplements'].forEach(t => {
     document.getElementById(`h-panel-${t}`).classList.toggle('hidden', t!==tab);
     document.getElementById(`h-tab-${t}`).className = 'btn' + (t===tab?' btn-primary':'');
   });
   if (tab==='weight') renderWeightChart();
-  if (tab==='workout') renderWorkoutHistory();
+  if (tab==='workout') renderWorkoutPlan();
   if (tab==='meals') renderMealHistory();
   if (tab==='water') renderWater();
 }
 
-function logWorkout() {
-  const type = document.getElementById('w-type').value;
-  const duration = parseInt(document.getElementById('w-duration').value)||0;
-  const date = document.getElementById('w-date').value || today();
-  const notes = document.getElementById('w-notes').value.trim();
-  if (!duration) return alert('Enter duration');
-  setState(s => { s.health.workouts.unshift({id:uid(),type,duration,date,notes}); return s; });
-  document.getElementById('w-duration').value='';
-  document.getElementById('w-notes').value='';
-  renderWorkoutHistory();
-  showToast('Workout logged ✓');
+function switchSuppDay(day) {
+  document.getElementById('supp-panel-training').classList.toggle('hidden', day!=='training');
+  document.getElementById('supp-panel-rest').classList.toggle('hidden', day!=='rest');
+  document.getElementById('supp-day-training').className = 'btn' + (day==='training'?' btn-primary':'');
+  document.getElementById('supp-day-rest').className = 'btn' + (day==='rest'?' btn-primary':'');
 }
 
-function renderWorkoutHistory() {
-  const items = getState().health.workouts.slice(0,20);
-  const el = document.getElementById('workout-history');
-  if (!el) return;
-  el.innerHTML = items.length ? items.map(w=>`
-    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:12px 16px;">
-      <div>
-        <span style="font-size:14px;font-weight:600;">${w.type}</span>
-        <span style="color:var(--muted);font-size:12px;margin-left:10px;">${w.duration} min · ${w.date}</span>
-        ${w.notes?`<div style="font-size:12px;color:var(--muted);margin-top:2px;">${w.notes}</div>`:''}
+// ── WORKOUT PLAN CONSTANTS ────────────────────────────────
+const WORKOUT_PLAN = [
+  {
+    day: 0, name: 'Monday', label: 'MON',
+    title: 'Heavy Upper Body & Zone 2',
+    goal: 'Upper body tension + mitochondria',
+    exercises: [
+      { name: 'Barbell Bench Press', sets: 4, reps: '6-8', weight: '70-75 kg', rest: '2.5min', cardio: false },
+      { name: 'Weighted Pull-Ups / Heavy Lat Pulldowns', sets: 3, reps: '6-8', weight: '60-65 kg', rest: '', cardio: false },
+      { name: 'Standing Overhead Barbell Press', sets: 3, reps: '8', weight: '35-40 kg', rest: '', cardio: false },
+      { name: 'Bent-Over Barbell Rows', sets: 3, reps: '8', weight: '55-60 kg', rest: '', cardio: false },
+      { name: 'Aerobic Flush Run', sets: 1, reps: '25 min', weight: '12 km/h Zone 2', rest: '', cardio: true }
+    ]
+  },
+  {
+    day: 1, name: 'Tuesday', label: 'TUE',
+    title: 'Heavy Lower Body & Grip/Core',
+    goal: 'Maximal leg strength + grip endurance',
+    exercises: [
+      { name: 'Barbell Back Squats', sets: 4, reps: '6-8', weight: '75-85 kg', rest: '3min', cardio: false },
+      { name: 'Romanian Deadlifts (RDLs)', sets: 3, reps: '8-10', weight: '70-80 kg', rest: '', cardio: false },
+      { name: "Farmer's Carry", sets: 4, reps: '40m', weight: '30 kg/hand', rest: '', cardio: false },
+      { name: 'Hanging Leg Raises', sets: 3, reps: '12-15', weight: 'bodyweight', rest: '', cardio: false }
+    ]
+  },
+  {
+    day: 2, name: 'Wednesday', label: 'WED',
+    title: 'VO2 Max Intervals',
+    goal: 'Raise aerobic ceiling via high-intensity intervals',
+    exercises: [
+      { name: 'Warm-up Run', sets: 1, reps: '5 min', weight: '10 km/h', rest: '', cardio: true },
+      { name: 'Sprint Intervals (×6)', sets: 6, reps: '1 min sprint + 2 min walk', weight: '16.5-17.5 / 5.5 km/h', rest: '', cardio: true },
+      { name: 'Cooldown Run', sets: 1, reps: '7 min', weight: '9 km/h', rest: '', cardio: true }
+    ]
+  },
+  {
+    day: 3, name: 'Thursday', label: 'THU',
+    title: 'Full-Body Hypertrophy',
+    goal: 'Volume accumulation for muscle growth',
+    exercises: [
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10', weight: '25-27.5 kg', rest: '', cardio: false },
+      { name: 'Bulgarian Split Squats', sets: 3, reps: '8-10/leg', weight: '15-20 kg', rest: '', cardio: false },
+      { name: 'Seated Cable Rows', sets: 3, reps: '10-12', weight: '55 kg', rest: '', cardio: false },
+      { name: 'Dumbbell Lateral Raises', sets: 3, reps: '12-15', weight: '10-12.5 kg', rest: '', cardio: false },
+      { name: 'DB Bicep Curls superset Tricep Rope Pushdowns', sets: 3, reps: '12', weight: '', rest: '', cardio: false }
+    ]
+  },
+  {
+    day: 4, name: 'Friday', label: 'FRI',
+    title: 'Functional Power & Tempo Run',
+    goal: 'Power output + lactate threshold',
+    exercises: [
+      { name: 'Warm-up Run', sets: 1, reps: '3 min', weight: '10 km/h', rest: '', cardio: true },
+      { name: 'Tempo Run', sets: 1, reps: '20 min', weight: '13.5-14.0 km/h', rest: '', cardio: true },
+      { name: 'Kettlebell Swings', sets: 4, reps: '15', weight: '24 kg', rest: '', cardio: false },
+      { name: 'Medicine Ball Slams', sets: 3, reps: '12', weight: '10-15 kg', rest: '', cardio: false },
+      { name: 'Plank', sets: 3, reps: '60 sec', weight: '+10 kg plate', rest: '', cardio: false }
+    ]
+  },
+  {
+    day: 5, name: 'Saturday', label: 'SAT',
+    title: 'Long Endurance Base',
+    goal: 'Build aerobic base, fat adaptation',
+    exercises: [
+      { name: 'Long Run', sets: 1, reps: '60-75 min', weight: '11.5-12.0 km/h Zone 2', rest: '', cardio: true }
+    ]
+  }
+];
+
+function getTodayWorkoutDay() {
+  const d = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
+  if (d === 0) return null; // Sunday = rest day
+  return d - 1; // Mon=0, Tue=1, ..., Sat=5
+}
+
+function getOrInitTodayWorkout(dayIndex) {
+  const s = getState();
+  const todayStr = today();
+  const tw = s.health.todayWorkout;
+  if (tw && tw.date === todayStr && tw.dayIndex === dayIndex) return tw;
+  // Init fresh for this day/date
+  const plan = WORKOUT_PLAN[dayIndex];
+  const fresh = {
+    date: todayStr,
+    dayIndex,
+    exercises: plan.exercises.map(ex => ({ name: ex.name, sets: [] }))
+  };
+  setState(st => { st.health.todayWorkout = fresh; return st; });
+  return fresh;
+}
+
+let _workoutActiveDay = null;
+
+function renderWorkoutPlan() {
+  const root = document.getElementById('workout-tracker-root');
+  if (!root) return;
+  const todayDay = getTodayWorkoutDay();
+  if (_workoutActiveDay === null) _workoutActiveDay = todayDay !== null ? todayDay : 0;
+  const activeDay = _workoutActiveDay;
+
+  // Day pills
+  const pillsHtml = WORKOUT_PLAN.map(p => {
+    const isToday = p.day === todayDay;
+    const isActive = p.day === activeDay;
+    const bg = isActive ? 'var(--purple)' : (isToday ? 'rgba(138,92,246,0.25)' : 'var(--s2)');
+    const border = isActive ? 'var(--purple)' : (isToday ? 'rgba(138,92,246,0.5)' : 'var(--border)');
+    return `<button onclick="switchWorkoutDay(${p.day})" style="padding:8px 14px;border-radius:8px;border:1px solid ${border};background:${bg};color:var(--text);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.05em;">${p.label}</button>`;
+  }).join('');
+
+  const plan = WORKOUT_PLAN[activeDay];
+  const tw = getOrInitTodayWorkout(activeDay);
+
+  // Exercise rows
+  const exHtml = plan.exercises.map((ex, ei) => {
+    const twEx = tw.exercises[ei] || { name: ex.name, sets: [] };
+    const isCardio = ex.cardio;
+    const accentColor = isCardio ? 'var(--green)' : 'var(--purple)';
+    const badge = isCardio ? `<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(34,211,160,0.15);color:var(--green);font-weight:700;margin-left:8px;">CARDIO</span>` : '';
+    const planLabel = `${ex.sets}×${ex.reps}${ex.weight ? ' @ ' + ex.weight : ''}${ex.rest ? ' · rest ' + ex.rest : ''}`;
+
+    // Logged set chips
+    const setChips = twEx.sets.map((set, si) => {
+      const doneStyle = set.done ? 'background:rgba(34,211,160,0.18);border-color:var(--green);' : 'background:var(--s2);border-color:var(--border);';
+      const checkBtn = set.done
+        ? `<button onclick="saveWorkoutSet(${activeDay},${ei},${si},${set.weight||0},${set.reps||0},false)" style="border:none;background:none;color:var(--green);cursor:pointer;font-size:13px;padding:0 0 0 4px;">✓</button>`
+        : `<button onclick="saveWorkoutSet(${activeDay},${ei},${si},${set.weight||0},${set.reps||0},true)" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 0 0 4px;">✓</button>`;
+      const rmBtn = `<button onclick="removeWorkoutSet(${activeDay},${ei},${si})" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0 0 0 4px;">✕</button>`;
+      return `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;border:1px solid;font-size:12px;gap:2px;${doneStyle}">
+        <span style="color:var(--text);">${set.weight||'—'} kg × ${set.reps||'—'}</span>${checkBtn}${rmBtn}
+      </span>`;
+    }).join('');
+
+    // Add set inline form (always shown, collapsed to a button)
+    const addSetBtn = `<button onclick="addWorkoutSet(${activeDay},${ei})" style="padding:4px 12px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;">+ Add Set</button>`;
+
+    return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+        <div>
+          <span style="font-size:14px;font-weight:600;color:var(--text);">${esc(ex.name)}</span>${badge}
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(planLabel)}</div>
+        </div>
       </div>
-      <button class="btn" style="font-size:11px;padding:3px 8px;" onclick="deleteWorkout('${w.id}')">✕</button>
+      <div id="wt-sets-${activeDay}-${ei}" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${setChips}</div>
+      <div id="wt-addinput-${activeDay}-${ei}"></div>
+      ${addSetBtn}
+    </div>`;
+  }).join('');
+
+  // Completion logs
+  const logs = (getState().health.workoutLogs || []).filter(l => l.planDay === activeDay).slice(-5).reverse();
+  const logsHtml = logs.length ? `
+    <div style="margin-top:20px;">
+      <div class="label" style="margin-bottom:10px;">Recent completions — ${plan.name}</div>
+      ${logs.map(l => {
+        const totalSets = (l.exercises||[]).reduce((acc, ex) => acc + (ex.sets||[]).filter(s=>s.done).length, 0);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;">
+          <span style="color:var(--text);">${l.date} · ${esc(plan.name)} — ${esc(plan.title)}</span>
+          <span style="color:var(--green);">${totalSets} sets done</span>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  root.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">${pillsHtml}</div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(plan.name)} — ${esc(plan.title)}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">Goal: ${esc(plan.goal)}</div>
+      ${exHtml}
+      <button onclick="markDayComplete(${activeDay})" style="margin-top:10px;padding:12px 28px;border-radius:10px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">Mark Day Complete</button>
     </div>
-  `).join('') : '<div class="empty-state"><div class="empty-icon">💪</div>No workouts yet.</div>';
+    ${logsHtml}`;
 }
 
-function deleteWorkout(id) {
-  setState(s=>{s.health.workouts=s.health.workouts.filter(w=>w.id!==id);return s;});
-  renderWorkoutHistory();
+function switchWorkoutDay(dayIndex) {
+  _workoutActiveDay = dayIndex;
+  renderWorkoutPlan();
+}
+
+function addWorkoutSet(dayIndex, exIndex) {
+  const inputContainer = document.getElementById(`wt-addinput-${dayIndex}-${exIndex}`);
+  if (!inputContainer || inputContainer.querySelector('input')) return; // already open
+  inputContainer.innerHTML = `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+    <input id="wt-w-${dayIndex}-${exIndex}" type="number" placeholder="kg" step="0.5" min="0" style="width:70px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s3);color:var(--text);font-size:13px;">
+    <span style="color:var(--muted);font-size:13px;">×</span>
+    <input id="wt-r-${dayIndex}-${exIndex}" type="number" placeholder="reps" min="1" style="width:65px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s3);color:var(--text);font-size:13px;">
+    <button onclick="commitWorkoutSet(${dayIndex},${exIndex})" style="padding:5px 14px;border-radius:6px;border:none;background:var(--purple);color:#fff;font-size:13px;cursor:pointer;">Save</button>
+    <button onclick="document.getElementById('wt-addinput-${dayIndex}-${exIndex}').innerHTML=''" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;">Cancel</button>
+  </div>`;
+}
+
+function commitWorkoutSet(dayIndex, exIndex) {
+  const w = parseFloat(document.getElementById(`wt-w-${dayIndex}-${exIndex}`)?.value) || 0;
+  const r = parseInt(document.getElementById(`wt-r-${dayIndex}-${exIndex}`)?.value) || 0;
+  if (!r) return;
+  const todayStr = today();
+  setState(st => {
+    if (!st.health.todayWorkout || st.health.todayWorkout.date !== todayStr || st.health.todayWorkout.dayIndex !== dayIndex) {
+      const plan = WORKOUT_PLAN[dayIndex];
+      st.health.todayWorkout = { date: todayStr, dayIndex, exercises: plan.exercises.map(ex=>({name:ex.name,sets:[]})) };
+    }
+    const ex = st.health.todayWorkout.exercises[exIndex];
+    if (!ex) return st;
+    ex.sets.push({ weight: w, reps: r, done: true });
+    return st;
+  });
+  renderWorkoutPlan();
+}
+
+function saveWorkoutSet(dayIndex, exIndex, setIndex, weight, reps, done) {
+  const todayStr = today();
+  setState(st => {
+    if (!st.health.todayWorkout || st.health.todayWorkout.date !== todayStr || st.health.todayWorkout.dayIndex !== dayIndex) return st;
+    const ex = st.health.todayWorkout.exercises[exIndex];
+    if (!ex || !ex.sets[setIndex]) return st;
+    ex.sets[setIndex] = { weight, reps, done };
+    return st;
+  });
+  renderWorkoutPlan();
+}
+
+function removeWorkoutSet(dayIndex, exIndex, setIndex) {
+  const todayStr = today();
+  setState(st => {
+    if (!st.health.todayWorkout || st.health.todayWorkout.date !== todayStr || st.health.todayWorkout.dayIndex !== dayIndex) return st;
+    const ex = st.health.todayWorkout.exercises[exIndex];
+    if (!ex) return st;
+    ex.sets.splice(setIndex, 1);
+    return st;
+  });
+  renderWorkoutPlan();
+}
+
+function markDayComplete(dayIndex) {
+  const todayStr = today();
+  const tw = getState().health.todayWorkout;
+  const plan = WORKOUT_PLAN[dayIndex];
+  const exercises = (tw && tw.dayIndex === dayIndex && tw.date === todayStr)
+    ? tw.exercises
+    : plan.exercises.map(ex => ({ name: ex.name, sets: [] }));
+  setState(st => {
+    if (!st.health.workoutLogs) st.health.workoutLogs = [];
+    st.health.workoutLogs.push({ id: uid(), planDay: dayIndex, date: todayStr, exercises });
+    return st;
+  });
+  showToast(`${plan.name} workout logged ✓`);
+  renderWorkoutPlan();
 }
 
 function logWeight() {
@@ -1509,10 +2167,10 @@ function renderWeightChart() {
     data: {
       labels: entries.map(e=>e.date.slice(5)),
       datasets: [{ label:'Weight (kg)', data: entries.map(e=>e.kg),
-        borderColor:'#e8900a', backgroundColor:'rgba(232,144,10,0.1)',
-        tension:0.3, pointBackgroundColor:'#f5c842', fill:true }]
+        borderColor:'#8a5cf6', backgroundColor:'rgba(138,92,246,0.12)',
+        tension:0.3, pointBackgroundColor:'#a78bfa', fill:true }]
     },
-    options: { plugins:{legend:{labels:{color:'#fde8b0'}}}, scales:{x:{ticks:{color:'#c8840a'}},y:{ticks:{color:'#c8840a'}}} }
+    options: { plugins:{legend:{labels:{color:'#ede8ff'}}}, scales:{x:{ticks:{color:'#5a5575'}},y:{ticks:{color:'#5a5575'}}} }
   });
 }
 
@@ -1565,7 +2223,7 @@ function resetWater(){setState(s=>{s.health.water={count:0,date:today()};return 
 
 function initHealthDates(){
   const t=today();
-  ['w-date','wt-date','meal-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
+  ['wt-date','meal-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
 }
 
 sectionRenderers['health'] = () => { initHealthDates(); switchHealthTab('workout'); };
@@ -1767,7 +2425,7 @@ function renderBooks() {
   grid.innerHTML=items.length?items.map(b=>`
     <div class="card" style="padding:0;overflow:hidden;">
       ${b.cover?`<img src="${b.cover}" style="width:100%;height:200px;object-fit:cover;">`:
-        `<div style="height:160px;background:radial-gradient(ellipse,rgba(232,144,10,0.15),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">📚</div>`}
+        `<div style="height:160px;background:radial-gradient(ellipse,rgba(138,92,246,0.15),transparent);display:flex;align-items:center;justify-content:center;font-size:48px;">📚</div>`}
       <div style="padding:10px;">
         <div style="font-size:13px;font-weight:600;line-height:1.3;">${b.title}</div>
         ${b.author?`<div style="font-size:11px;color:var(--muted);margin:3px 0;">${b.author}${b.year?' · '+b.year:''}</div>`:''}
@@ -2188,21 +2846,60 @@ function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ── IMAGE DB (IndexedDB) ─────────────────────────────────
 const IMG_DB_NAME = 'lifeos_images';
-const IMG_DB_VERSION = 1;
+const IMG_DB_VERSION = 2;
 const IMG_STORE = 'images';
+const FILE_STORE = 'book_files';
 
 function openImageDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(IMG_DB_NAME, IMG_DB_VERSION);
     req.onupgradeneeded = e => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains(IMG_STORE)) {
-        db.createObjectStore(IMG_STORE);
-      }
+      if (!db.objectStoreNames.contains(IMG_STORE)) db.createObjectStore(IMG_STORE);
+      if (!db.objectStoreNames.contains(FILE_STORE)) db.createObjectStore(FILE_STORE);
     };
     req.onsuccess = e => resolve(e.target.result);
     req.onerror = () => reject(req.error);
   });
+}
+
+async function storeBookFile(bookId, file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const db = await openImageDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FILE_STORE, 'readwrite');
+      tx.objectStore(FILE_STORE).put({ name: file.name, data: buf }, bookId);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) { console.warn('storeBookFile failed', e); }
+}
+
+async function getBookFile(bookId) {
+  const db = await openImageDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FILE_STORE, 'readonly');
+    const req = tx.objectStore(FILE_STORE).get(bookId);
+    req.onsuccess = () => {
+      const rec = req.result;
+      if (!rec) return resolve(null);
+      resolve(new File([rec.data], rec.name));
+    };
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function deleteBookFile(bookId) {
+  try {
+    const db = await openImageDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(FILE_STORE, 'readwrite');
+      tx.objectStore(FILE_STORE).delete(bookId);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) {}
 }
 
 async function storeImage(key, dataUrl) {
@@ -2259,6 +2956,362 @@ function compressImageToDataUrl(arrayBuffer, maxWidth = 400) {
 }
 
 // ── EPUB PARSER ──────────────────────────────────────────
+
+async function getEpubChapterMap(zip) {
+  try {
+    // Try known DK path first, then scan all files
+    let navPath = null;
+    const candidates = ['OEBPS/xhtml/nav.xhtml', 'OEBPS/nav.xhtml', 'nav.xhtml', 'nav.html'];
+    for (const c of candidates) {
+      if (zip.file(c)) { navPath = c; break; }
+    }
+    if (!navPath) {
+      // Scan zip for any file named nav.xhtml or nav.html
+      const found = Object.keys(zip.files).find(n => /(?:^|\/)nav\.(xhtml|html)$/i.test(n) && !zip.files[n].dir);
+      if (found) navPath = found;
+    }
+    if (!navPath) return {};
+    const navXml = await zip.file(navPath).async('string');
+    let navDoc;
+    try {
+      navDoc = new DOMParser().parseFromString(navXml, 'application/xhtml+xml');
+      if (navDoc.querySelector('parsererror')) throw new Error('xhtml fail');
+    } catch(e) {
+      navDoc = new DOMParser().parseFromString(navXml, 'text/html');
+    }
+    const map = {};
+    // Find outer <li> that has a direct <a> child AND a nested <ol> (chapter → recipe list)
+    const allLi = Array.from(navDoc.querySelectorAll('li'));
+    for (const li of allLi) {
+      const directA = Array.from(li.children).find(c => c.tagName?.toLowerCase() === 'a');
+      const nestedOl = li.querySelector('ol');
+      if (!directA || !nestedOl) continue;
+      let chapterTitle = (directA.textContent || '').trim().replace(/\s+/g, ' ');
+      // Strip leading numbers like "2: " or "2 " from chapter names
+      chapterTitle = chapterTitle.replace(/^\d+[\s:.\-]+/, '').trim();
+      if (!chapterTitle) continue;
+      // Map each recipe filename in the nested ol to this chapter
+      const recipeLis = Array.from(nestedOl.querySelectorAll('li > a'));
+      for (const a of recipeLis) {
+        const href = (a.getAttribute('href') || '').split('#')[0].trim();
+        if (!href) continue;
+        const basename = href.split('/').pop();
+        if (basename) map[basename] = chapterTitle;
+      }
+    }
+    return map;
+  } catch(e) {
+    console.warn('getEpubChapterMap failed:', e.message);
+    return {};
+  }
+}
+
+async function getEpubSpineFiles(zip) {
+  try {
+    const containerXml = await zip.file('META-INF/container.xml').async('string');
+    const containerDoc = new DOMParser().parseFromString(containerXml, 'application/xml');
+    const rootfileEl = containerDoc.querySelector('rootfile');
+    if (!rootfileEl) throw new Error('no rootfile');
+    const opfPath = rootfileEl.getAttribute('full-path');
+    const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+    const opfXml = await zip.file(opfPath).async('string');
+    const opfDoc = new DOMParser().parseFromString(opfXml, 'application/xml');
+    const manifest = {};
+    Array.from(opfDoc.querySelectorAll('manifest item')).forEach(item => {
+      manifest[item.getAttribute('id')] = {
+        href: opfDir + decodeURIComponent(item.getAttribute('href') || ''),
+        mediaType: item.getAttribute('media-type') || ''
+      };
+    });
+    const files = Array.from(opfDoc.querySelectorAll('spine itemref'))
+      .map(ref => manifest[ref.getAttribute('idref')])
+      .filter(item => item && item.mediaType.includes('html'))
+      .map(item => item.href);
+    return files.length ? files : fallbackScanZip(zip);
+  } catch(e) {
+    console.warn('OPF parse failed, scanning zip:', e.message);
+    return fallbackScanZip(zip);
+  }
+}
+
+function fallbackScanZip(zip) {
+  return Object.keys(zip.files)
+    .filter(name => /\.(xhtml|html)$/i.test(name) && !zip.files[name].dir)
+    .sort();
+}
+
+function extractIngredientsGeneric(siblings) {
+  const ingredients = [];
+  for (const el of siblings) {
+    if (/ingredient/i.test(el.className || '')) {
+      // Use direct children (handles div.IL_item, li, p — any child element)
+      const children = Array.from(el.children);
+      if (children.length > 0) {
+        children.forEach(child => { const t=(child.textContent||'').trim().replace(/\s+/g,' '); if(t) ingredients.push(t); });
+      } else {
+        const t=(el.textContent||'').trim().replace(/\s+/g,' '); if(t) ingredients.push(t);
+      }
+    }
+  }
+  if (ingredients.length) return ingredients;
+  // Individual elements where 'ing' is a whole CSS class word (DK/Dorling Kindersley style: p.ing)
+  const ingEls = siblings.filter(el => /(?:^|\s)ing(?:\s|$)/i.test(el.className||''));
+  ingEls.forEach(el => { const t=(el.textContent||'').trim().replace(/\s+/g,' '); if(t) ingredients.push(t); });
+  if (ingredients.length) return ingredients;
+  // UL fallback: list items that look like ingredients
+  for (const el of siblings) {
+    if (el.tagName?.toLowerCase() !== 'ul') continue;
+    const items = Array.from(el.querySelectorAll('li'));
+    const score = items.filter(li =>
+      /\b(\d[\d\/\s]*|one|two|three|four|five|six)\s*(cup|tbsp|tsp|pound|lb|oz|g|gram|kg|ml|liter|clove|bunch|sprig|pinch|dash|can|jar|slice|piece|medium|large|small|head|stalk)/i
+      .test(li.textContent||'')
+    ).length;
+    if (score >= 2 || (items.length >= 4 && score >= 1)) {
+      items.forEach(li => { const t=(li.textContent||'').trim().replace(/\s+/g,' '); if(t) ingredients.push(t); });
+      break;
+    }
+  }
+  return ingredients;
+}
+
+function extractStepsGeneric(siblings) {
+  const steps = [];
+  for (const el of siblings) {
+    if (/instruction|direction|method|procedure|step/i.test(el.className||'')) {
+      const children = el.querySelectorAll('li, p');
+      if (children.length > 0) {
+        children.forEach(item => { const t=(item.textContent||'').trim().replace(/\s+/g,' '); if(t&&t.length>15) steps.push(t); });
+      } else {
+        // Element itself is the step — strip leading step-number (e.g. "1 Heat the pan…" from DK)
+        const raw=(el.textContent||'').trim().replace(/\s+/g,' ');
+        const t = raw.replace(/^\d+\s+(?=[A-Z])/,'');
+        if(t && t.length>15) steps.push(t);
+      }
+    }
+  }
+  if (steps.length) return steps;
+  for (const el of siblings) {
+    if (el.tagName?.toLowerCase() !== 'ol') continue;
+    const items = Array.from(el.querySelectorAll('li'));
+    if (items.filter(li=>(li.textContent||'').trim().length>20).length >= 2) {
+      items.forEach(li => { const t=(li.textContent||'').trim().replace(/\s+/g,' '); if(t&&t.length>10) steps.push(t); });
+      break;
+    }
+  }
+  if (steps.length) return steps;
+  const actionRe = /^(heat|cook|add|stir|mix|combine|place|put|remove|drain|season|serve|bake|roast|grill|fry|boil|simmer|slice|chop|dice|mince|whisk|blend|fold|transfer|cover|let|allow|bring|reduce|prepare|preheat|rinse|pat|spread|pour|drizzle|brush|coat|toss|arrange|top|garnish)/i;
+  const instrParas = siblings.filter(el=>el.tagName?.toLowerCase()==='p' && actionRe.test((el.textContent||'').trim()));
+  if (instrParas.length >= 2) instrParas.forEach(p=>{ const t=(p.textContent||'').trim().replace(/\s+/g,' '); if(t&&t.length>15) steps.push(t); });
+  return steps;
+}
+
+async function extractFirstImageGeneric(siblings, zip, fileDir) {
+  for (const el of siblings) {
+    const imgs = el.tagName?.toLowerCase()==='img' ? [el] : Array.from(el.querySelectorAll('img'));
+    for (const img of imgs) {
+      const src = img.getAttribute('src')||img.getAttribute('data-src')||'';
+      if (!src || /\.svg$/i.test(src)) continue;
+      // Skip icons/symbols: filename contains "icon", or class suggests small decorative image
+      const cls = img.getAttribute('class')||'';
+      const fname = src.split('/').pop();
+      if (/icon/i.test(fname) || /icon/i.test(cls)) continue;
+      // Skip DK-style small icon images (img-20 class = 20px icons for time/servings)
+      if (/img-\d{1,2}(?:\s|$)/i.test(cls)) continue;
+      let resolved;
+      if (src.startsWith('/')) { resolved = src.slice(1); }
+      else if (src.includes('../')) {
+        const parts = fileDir.split('/').filter(Boolean);
+        src.split('/').forEach(p => { if(p==='..') parts.pop(); else parts.push(p); });
+        resolved = parts.join('/');
+      } else { resolved = fileDir + src; }
+      for (const path of [resolved, src, fileDir + src.split('/').pop()]) {
+        const imgFile = zip.file(path);
+        if (imgFile) {
+          try { const ab = await imgFile.async('arraybuffer'); return await compressImageToDataUrl(ab, 400); }
+          catch(e) { console.warn('img extract failed:', path); }
+          break;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// PRH / Potter·Ten Speed / Harmony / Rodale cookbook parser
+// Detects: div.sub_chap with p.rt titles, div.custom_list ingredients, p.para-rp* steps
+async function parseChapterPRH(chapterXml, zip, bookId, bookTitle, filePath, chapterHint) {
+  let doc;
+  try {
+    doc = new DOMParser().parseFromString(chapterXml, 'application/xhtml+xml');
+    if (doc.querySelector('parsererror')) throw new Error('xhtml fail');
+  } catch(e) {
+    doc = new DOMParser().parseFromString(chapterXml, 'text/html');
+  }
+
+  const containers = Array.from(doc.querySelectorAll('div.sub_chap, div[class*="sub_chap"]'));
+  // No sub_chap → not a PRH file, let generic parser try
+  if (containers.length === 0) return [];
+  // Has sub_chap but no p.rt → PRH content chapter (nutrition/lifestyle text), not recipes.
+  // Return null so caller skips generic parser (avoids false positives from body-text headings).
+  if (!doc.querySelector('p.rt, p[class="rt"]')) return null;
+
+  const fileDir = filePath && filePath.includes('/') ? filePath.substring(0, filePath.lastIndexOf('/') + 1) : '';
+  const chapterTitle = chapterHint || (doc.querySelector('h1,h2')?.textContent || '').trim();
+  const recipes = [];
+
+  for (const container of containers) {
+    // Title: p.rt
+    const titleEl = container.querySelector('p.rt, p[class="rt"], [class*="recipe-title"i]');
+    const title = (titleEl?.textContent || '').trim().replace(/\s+/g, ' ');
+    if (!title || title.length < 3) continue;
+
+    // Intro: p.para-rhnf or first paragraph-like element before ingredient list
+    const introEl = container.querySelector('p.para-rhnf, p[class*="rhnf"], p[class*="intro"i]');
+    const intro = (introEl?.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 300);
+
+    // Serves: p.para-ry or p.ry contains "SERVES N" — may be inside or outside sub_chap
+    let serves = '';
+    let metaEl = container.querySelector('p.para-ry, p[class*="para-ry"], p.ry, p[class="ry"]');
+    if (!metaEl) {
+      // Walk siblings after sub_chap (same pattern as steps)
+      let sib2 = container.nextElementSibling;
+      while (sib2 && !sib2.matches('div.sub_chap, div[class*="sub_chap"]')) {
+        if (sib2.matches('p.para-ry, p[class*="para-ry"], p.ry')) { metaEl = sib2; break; }
+        sib2 = sib2.nextElementSibling;
+      }
+    }
+    if (metaEl) {
+      const metaText = (metaEl.textContent || '').replace(/\s+/g, ' ').trim();
+      const sm = metaText.match(/\bSERVES?\s*(\d+(?:\s*(?:to|–|-)\s*\d+)?)/i);
+      if (sm) serves = 'Serves ' + sm[1];
+      else if (/\bSERVES?\b/i.test(metaText)) serves = metaText.slice(0, 50);
+    }
+
+    // Ingredients: div.custom_list p (para-rilf, para-ril) or any list role="listitem"
+    const ingList = container.querySelector('div.custom_list, div[class*="custom_list"], [role="list"]');
+    let ingredients = [];
+    if (ingList) {
+      ingredients = Array.from(ingList.querySelectorAll('p, li, [role="listitem"]'))
+        .map(el => (el.textContent || '').trim().replace(/\s+/g, ' '))
+        .filter(t => t.length > 1);
+    }
+
+    // Steps: p.para-rpf (first step), p.para-rp (subsequent), also p[class*="para-rp"]
+    // Also handle p.para-rilh (subheadings within recipe like "For the sauce:")
+    const steps = [];
+    const stepEls = Array.from(container.querySelectorAll(
+      'p.para-rpf, p.para-rp, p[class*="para-rp"], p[class*="step"i], p[class*="method"i], p[class*="direction"i]'
+    )).filter(el => !ingList || !ingList.contains(el));
+    // Steps may live outside sub_chap as siblings — walk until next sub_chap
+    let sib = container.nextElementSibling;
+    while (sib && !sib.matches('div.sub_chap, div[class*="sub_chap"]')) {
+      if (sib.matches('p.para-rpf, p.para-rp, p[class*="para-rp"], p[class*="step"i], p[class*="method"i], p[class*="direction"i]')) {
+        stepEls.push(sib);
+      }
+      sib = sib.nextElementSibling;
+    }
+    for (const el of stepEls) {
+      const t = (el.textContent || '').trim().replace(/\s+/g, ' ');
+      if (t.length > 5) steps.push(t);
+    }
+
+    if (ingredients.length + steps.length < 2) continue;
+
+    // Image: look for img inside container or nearby project_img / subChapter_img
+    const allSiblings = Array.from(container.querySelectorAll('*'));
+    const imageDataUrl = await extractFirstImageGeneric(allSiblings, zip, fileDir);
+
+    const recipe = {
+      id: uid(), bookId, bookTitle, title,
+      chapter: chapterTitle,
+      mealType: chapterToMealType(chapterTitle || title),
+      imageName: null, serves, intro, ingredients, steps,
+      siml: [], addedAt: Date.now()
+    };
+    recipes.push(recipe);
+    if (imageDataUrl) await storeImage(recipe.id, imageDataUrl);
+  }
+  return recipes;
+}
+
+async function parseChapterGeneric(chapterXml, zip, bookId, bookTitle, filePath, chapterHint) {
+  let doc;
+  try {
+    doc = new DOMParser().parseFromString(chapterXml, 'application/xhtml+xml');
+    if (doc.querySelector('parsererror')) throw new Error('xhtml fail');
+  } catch(e) {
+    doc = new DOMParser().parseFromString(chapterXml, 'text/html');
+  }
+  const fileDir = filePath&&filePath.includes('/') ? filePath.substring(0, filePath.lastIndexOf('/')+1) : '';
+  const h1h2Text = (doc.querySelector('h1,h2')?.textContent||'').trim();
+  // Use chapterHint when the heading is absent or looks like a recipe title (not a category)
+  const chapterTitle = chapterHint || h1h2Text;
+  const recipes = [];
+  const SKIP_RE = /^(table of contents|introduction|preface|foreword|acknowledgment|index|part \d|about the|copyright|how to use)/i;
+  const headings = Array.from(doc.querySelectorAll(
+    'h1,h2,h3,h4,h5,' +
+    '[class*="recipe-title"i],[class*="recipetitle"i],[class*="recipe_title"i],' +
+    '[class*="recipe-heading"i],[class*="recipe_heading"i],[class*="recipe-name"i],[class*="recipe_name"i],' +
+    '[class*="chapter-head"i]'  // DK/Dorling Kindersley cookbooks
+  ));
+  const seen = new Set();
+  for (const heading of headings) {
+    if (seen.has(heading)) continue; seen.add(heading);
+    const title = (heading.textContent||'').trim().replace(/\s+/g,' ');
+    if (!title || title.length < 3 || title.length > 120 || SKIP_RE.test(title)) continue;
+    const tagLevel = parseInt((heading.tagName||'h9').match(/\d/)?.[0]||'9');
+    const headingClass = heading.className || '';
+    const siblings = [];
+    let node = heading.nextElementSibling;
+    while (node) {
+      const nt = node.tagName?.toLowerCase()||'';
+      // Stop at: same/higher heading tag, OR element with same heading class
+      if (/^h\d$/.test(nt) && parseInt(nt[1])<=tagLevel) break;
+      if (headingClass && node.className === headingClass) break;
+      siblings.push(node); node = node.nextElementSibling;
+    }
+    if (siblings.length < 2) continue;
+    const ingredients = extractIngredientsGeneric(siblings);
+    const steps = extractStepsGeneric(siblings);
+    if (ingredients.length + steps.length < 3) continue;
+    const serves = (() => {
+      const checkText = t => {
+        t = (t||'').replace(/\s+/g,' ').trim();
+        if (!t || t.length > 80) return null;
+        if (/yield|serves/i.test(t)) return t.slice(0,60);
+        if (/^(?:serves?|yields?|makes?|portions?)[:\s]/i.test(t)) return t.slice(0,60);
+        const m = t.match(/^(\d+(?:\s*[-–]\s*\d+)?)\s*(servings?|portions?|people)/i);
+        if (m) return m[0];
+        return null;
+      };
+      for (const el of siblings) {
+        // Check element itself
+        const r = checkText(el.textContent);
+        if (r) return r;
+        // If element is a container (table, div), check each child element too
+        for (const child of el.querySelectorAll('td, th, div, p, span')) {
+          const r2 = checkText(child.textContent);
+          if (r2) return r2;
+        }
+      }
+      return '';
+    })();
+    const intro = (() => {
+      for (const el of siblings) {
+        if (el.tagName?.toLowerCase()!=='p') continue;
+        const t=(el.textContent||'').trim().replace(/\s+/g,' ');
+        if(t.length>30 && !/^(ingredients?|directions?|method|instructions?)/i.test(t)) return t.slice(0,300);
+      }
+      return '';
+    })();
+    const imageDataUrl = await extractFirstImageGeneric(siblings, zip, fileDir);
+    const recipe = { id:uid(), bookId, bookTitle, title, chapter:chapterTitle, mealType:chapterToMealType(chapterTitle||title), imageName:null, serves, intro, ingredients, steps, siml:[], addedAt:Date.now() };
+    recipes.push(recipe);
+    if (imageDataUrl) await storeImage(recipe.id, imageDataUrl);
+  }
+  return recipes;
+}
+
 const CHAPTER_TO_MEAL = {
   'brunch': 'breakfast',
   'raw veg': 'lunch',
@@ -2298,16 +3351,18 @@ async function parseChapter(chapterXml, zip, bookId, bookTitle) {
   const chapterName = chapterNameEl ? paraText(chapterNameEl) : '';
   const mealType = chapterToMealType(chapterName);
 
-  const headings = Array.from(doc.querySelectorAll('.OS_RECIPE-HEADING'));
+  // Match any Ottolenghi book prefix: OS_, PM_, PL_, J_, etc.
+  const headings = Array.from(doc.querySelectorAll('[class*="RECIPE-HEADING"]'));
   const recipes = [];
 
   for (const heading of headings) {
     const title = paraText(heading);
     if (!title) continue;
 
+    const headingCls = heading.className;
     const siblings = [];
     let node = heading.nextElementSibling;
-    while (node && !node.classList.contains('OS_RECIPE-HEADING')) {
+    while (node && !node.className?.includes('RECIPE-HEADING')) {
       siblings.push(node);
       node = node.nextElementSibling;
     }
@@ -2319,11 +3374,14 @@ async function parseChapter(chapterXml, zip, bookId, bookTitle) {
       const imgEl = imgDiv.querySelector('img');
       if (imgEl) {
         imageName = imgEl.getAttribute('src').split('/').pop();
-        const zipPath = `OEBPS/images/${imageName}`;
-        const imgFile = zip.file(zipPath);
-        if (imgFile) {
-          const ab = await imgFile.async('arraybuffer');
-          imageDataUrl = await compressImageToDataUrl(ab, 400);
+        // Try common Ottolenghi image paths
+        for (const zipPath of [`OEBPS/images/${imageName}`, `OEBPS/Images/${imageName}`, `images/${imageName}`]) {
+          const imgFile = zip.file(zipPath);
+          if (imgFile) {
+            const ab = await imgFile.async('arraybuffer');
+            imageDataUrl = await compressImageToDataUrl(ab, 400);
+            break;
+          }
         }
       }
     }
@@ -2340,26 +3398,27 @@ async function parseChapter(chapterXml, zip, bookId, bookTitle) {
       });
     }
 
-    const introPara = siblings.find(el =>
-      el.classList.contains('OS_RECIPE-INTRO') || el.classList.contains('RECIPE-INTRO')
-    );
+    const introPara = siblings.find(el => el.className?.includes('RECIPE-INTRO'));
     const intro = introPara ? paraText(introPara) : '';
 
-    const servesPara = siblings.find(el => el.classList.contains('OS_Serves'));
+    const servesPara = siblings.find(el => /Serves|serves/i.test(el.className||''));
     const serves = servesPara ? paraText(servesPara) : '';
 
     const ingredients = siblings
-      .filter(el => el.classList.contains('OS_INGREDIENTS-LIST') || el.classList.contains('OS_double-column-ingredients'))
+      .filter(el => /INGREDIENTS-LIST|ingredients/i.test(el.className||''))
       .map(el => paraText(el))
       .filter(Boolean);
 
     const steps = [];
     siblings.forEach(el => {
       if (el.tagName.toLowerCase() === 'ol') {
-        el.querySelectorAll('li.OS_method p, li.OS_method').forEach(li => {
-          const t = paraText(li);
-          if (t) steps.push(t);
-        });
+        // Try *_method class first, fall back to all li
+        const methodLis = el.querySelectorAll('li[class*="method"] p, li[class*="method"]');
+        if (methodLis.length > 0) {
+          methodLis.forEach(li => { const t = paraText(li); if (t) steps.push(t); });
+        } else {
+          el.querySelectorAll('li').forEach(li => { const t = paraText(li); if (t && t.length > 10) steps.push(t); });
+        }
       }
     });
 
@@ -2407,28 +3466,45 @@ async function parseEpub(file) {
     return;
   }
 
-  const chapterFiles = Object.keys(zip.files)
-    .filter(name => /OEBPS\/xhtml\/c\d+\.xhtml$/i.test(name))
-    .sort();
+  const chapterFiles = await getEpubSpineFiles(zip);
 
   if (chapterFiles.length === 0) {
-    alert('No recipe chapters found in this EPUB. Only Ottolenghi-style EPUBs are supported.');
+    alert('Could not read EPUB structure. Make sure the file is a valid EPUB.');
     hideParseProgress();
     return;
   }
+
+  const chapterMap = await getEpubChapterMap(zip);
 
   const allRecipes = [];
   for (let i = 0; i < chapterFiles.length; i++) {
     const name = chapterFiles[i];
     const chNum = i + 1;
-    showParseProgress(`Parsing chapter ${chNum} of ${chapterFiles.length}…`, chNum / chapterFiles.length);
+    showParseProgress(`Scanning ${chNum} of ${chapterFiles.length}…`, chNum / chapterFiles.length);
     try {
       const xml = await zip.file(name).async('string');
-      const recipes = await parseChapter(xml, zip, bookId, bookTitle);
+      const chapterHint = chapterMap[name.split('/').pop()] || '';
+      let recipes = await parseChapter(xml, zip, bookId, bookTitle);
+      if (recipes.length === 0) {
+        const prhResult = await parseChapterPRH(xml, zip, bookId, bookTitle, name, chapterHint);
+        if (prhResult === null) {
+          recipes = []; // PRH content-only file — skip generic to avoid false positives
+        } else if (prhResult.length > 0) {
+          recipes = prhResult;
+        } else {
+          recipes = await parseChapterGeneric(xml, zip, bookId, bookTitle, name, chapterHint);
+        }
+      }
       allRecipes.push(...recipes);
     } catch (e) {
       console.warn('Skipping chapter', name, e);
     }
+  }
+
+  if (allRecipes.length === 0) {
+    alert('No recipes found in this EPUB. The book structure may not be supported yet.');
+    hideParseProgress();
+    return;
   }
 
   setState(s => {
@@ -2439,9 +3515,769 @@ async function parseEpub(file) {
     return s;
   });
 
+  storeBookFile(bookId, file);
   hideParseProgress();
   showToast(`Imported ${allRecipes.length} recipes from "${bookTitle}" ✓`);
   renderRecipes();
+}
+
+function handleBookFile(file) {
+  if (!file) return Promise.resolve();
+  if (/\.epub$/i.test(file.name)) return parseEpub(file);
+  if (/\.pdf$/i.test(file.name)) return parsePdf(file);
+  alert('Unsupported format. Please use .epub or .pdf files.');
+  return Promise.resolve();
+}
+
+async function fetchImageAsDataUrl(src) {
+  const weservUrl = `https://images.weserv.nl/?url=${encodeURIComponent(src)}&w=400&output=jpg&q=72&n=-1`;
+  try {
+    const r = await fetch(weservUrl);
+    if (r.ok) {
+      const buf = await r.arrayBuffer();
+      if (buf.byteLength > 2000) {
+        const blob = new Blob([buf], { type: 'image/jpeg' });
+        return await new Promise(res => {
+          const fr = new FileReader();
+          fr.onload = e => res(e.target.result);
+          fr.onerror = () => res(null);
+          fr.readAsDataURL(blob);
+        });
+      }
+    }
+  } catch {}
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    const timer = setTimeout(() => resolve(null), 10000);
+    const done = v => { clearTimeout(timer); resolve(v); };
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, 400 / img.width);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        done(c.toDataURL('image/jpeg', 0.72));
+      } catch { done(null); }
+    };
+    img.onerror = () => done(null);
+    img.src = weservUrl;
+  });
+}
+
+// ── Claude API helpers ────────────────────────────────────────────────────
+function getClaudeApiKey() { return localStorage.getItem('lifeos_claude_key') || null; }
+
+async function ensureClaudeApiKey() {
+  let key = getClaudeApiKey();
+  if (key) return key;
+  key = prompt('Anthropic API key (stored in browser only, sent only to api.anthropic.com):');
+  if (!key || !key.trim().startsWith('sk-')) { alert('Invalid API key.'); return null; }
+  localStorage.setItem('lifeos_claude_key', key.trim());
+  return key.trim();
+}
+
+async function callClaude(messages, maxTokens = 1024) {
+  const key = await ensureClaudeApiKey();
+  if (!key) return null;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages })
+    });
+    if (!resp.ok) {
+      if (resp.status === 401) { localStorage.removeItem('lifeos_claude_key'); alert('API key invalid — cleared. Try again.'); }
+      return null;
+    }
+    const data = await resp.json();
+    return data.content[0].text;
+  } catch(e) { console.error('Claude API error:', e); return null; }
+}
+
+function parseClaudeRecipeJson(text) {
+  try {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const obj = JSON.parse(match[0]);
+    if (obj.error || !obj.title) return null;
+    return obj;
+  } catch { return null; }
+}
+
+// ── Screenshot import ─────────────────────────────────────────────────────
+function importRecipeFromScreenshot() {
+  let inp = document.getElementById('rv-screenshot-input');
+  if (!inp) {
+    inp = document.createElement('input');
+    inp.type = 'file'; inp.id = 'rv-screenshot-input';
+    inp.accept = 'image/*'; inp.style.display = 'none';
+    inp.onchange = async () => {
+      const file = inp.files[0]; inp.value = '';
+      if (!file) return;
+      const restoreScreen = () => { hideParseProgress(); renderRecipesHeader(); renderRecipeTabs(); renderRecipeGrid(); };
+      try {
+        showParseProgress('Reading screenshot…', 0.1);
+        let photoDataUrl = null;
+        try {
+          const buf = await file.arrayBuffer();
+          photoDataUrl = await compressImageToDataUrl(buf, 400);
+        } catch {}
+        if (!photoDataUrl) { restoreScreen(); alert('Could not read image.'); return; }
+
+        showParseProgress('Asking Claude to extract recipe…', 0.3);
+        // send original file bytes (not compressed) for better OCR
+        const origBuf = await file.arrayBuffer();
+        const origBase64 = await new Promise(res => {
+          const fr = new FileReader(); fr.onload = e => res(e.target.result.split(',')[1]); fr.onerror = () => res(null);
+          fr.readAsDataURL(new Blob([origBuf]));
+        });
+        const mediaType = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+        const text = await callClaude([{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: origBase64 } },
+            { type: 'text', text: 'Extract the recipe from this image. Return ONLY valid JSON with no markdown fences:\n{"title":"","serves":"","mealType":"breakfast|lunch|dinner|snack|drinks","intro":"","ingredients":[],"steps":[]}' }
+          ]
+        }], 2048);
+        if (!text) { restoreScreen(); alert('No response from Claude. Check your API key.'); return; }
+        const parsed = parseClaudeRecipeJson(text);
+        if (!parsed) { restoreScreen(); alert('Claude could not find a recipe in that image.'); return; }
+
+        hideParseProgress();
+        const chosenType = await pickMealType(parsed.mealType || 'dinner', parsed.title || 'Untitled');
+        showParseProgress('Saving…', 0.9);
+
+        const recipe = {
+          id: uid(), bookId: 'screenshots', bookTitle: 'My Screenshots',
+          title: parsed.title || 'Untitled', chapter: '', mealType: chosenType,
+          imageName: null, serves: parsed.serves || '', intro: parsed.intro || '',
+          ingredients: parsed.ingredients || [], steps: parsed.steps || [],
+          siml: [], addedAt: Date.now()
+        };
+        await storeImage(recipe.id, photoDataUrl);
+        setState(s => {
+          if (!s.books) s.books = [];
+          if (!s.recipes) s.recipes = [];
+          if (!s.books.find(b => b.id === 'screenshots'))
+            s.books.unshift({ id: 'screenshots', title: 'My Screenshots', recipeCount: 0, addedAt: Date.now() });
+          s.recipes.unshift(recipe);
+          const book = s.books.find(b => b.id === 'screenshots');
+          if (book) book.recipeCount++;
+          return s;
+        });
+        restoreScreen();
+        showToast(`✅ "${recipe.title}" added from screenshot`);
+      } catch(err) {
+        console.error('Screenshot import error:', err);
+        restoreScreen();
+        alert('Import failed: ' + (err.message || err));
+      }
+    };
+    document.body.appendChild(inp);
+  }
+  inp.click();
+}
+
+// ── YouTube import ────────────────────────────────────────────────────────
+async function importFromYouTube(url) {
+  showParseProgress('Fetching YouTube info…', 0.1);
+  const PROXY = 'https://corsproxy.io/?url=';
+  let title = '', thumbnailUrl = '', description = '';
+
+  // normalise Shorts → watch URL for oembed compatibility
+  const oembedUrl = url.replace(/youtube\.com\/shorts\/([^?&]+)/, 'youtube.com/watch?v=$1');
+
+  // oembed: title + thumbnail (no CORS needed)
+  try {
+    const oe = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(oembedUrl)}&format=json`);
+    if (oe.ok) { const d = await oe.json(); title = d.title || ''; thumbnailUrl = d.thumbnail_url || ''; }
+  } catch {}
+
+  // get description from page (YouTube pages are huge — skip gracefully on 413/error)
+  showParseProgress('Fetching video description…', 0.3);
+  try {
+    const r = await fetch(PROXY + encodeURIComponent(oembedUrl), { signal: AbortSignal.timeout(15000) });
+    if (r.ok && r.status !== 413) {
+      const html = await r.text();
+      const m = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
+      if (m) description = m[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      if (!title) {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        title = doc.querySelector('meta[property="og:title"]')?.content || '';
+        if (!thumbnailUrl) thumbnailUrl = doc.querySelector('meta[property="og:image"]')?.content || '';
+      }
+    }
+  } catch {}
+
+  showParseProgress('Extracting recipe from description…', 0.55);
+  let ingredients = [], steps = [], serves = '', intro = '', mealType = 'dinner';
+
+  if (description) {
+    // heuristic parse: look for ingredients/steps sections
+    const lines = description.split('\n').map(l => l.trim()).filter(Boolean);
+    let phase = 'none';
+    for (const line of lines) {
+      if (/^(ingredients?|what you need):?\s*$/i.test(line)) { phase = 'ingredients'; continue; }
+      if (/^(instructions?|directions?|method|steps?|how to):?\s*$/i.test(line)) { phase = 'steps'; continue; }
+      if (/^serves?\s*\d/i.test(line)) { serves = line; continue; }
+      if (phase === 'ingredients' && /^\d+\s*[\-–]/.test(line) === false && line.length < 120)
+        ingredients.push(line.replace(/^[•▪·\-–—*]\s*/, ''));
+      if (phase === 'steps' && line.length > 15)
+        steps.push(line.replace(/^\d+[\.\)]\s*/, ''));
+    }
+    // if no structure found and Claude key available, ask Claude
+    if ((ingredients.length < 2 || steps.length < 1) && description.length > 100) {
+      const text = await callClaude([{ role: 'user', content:
+        `YouTube video: "${title}"\nDescription:\n${description.slice(0,3000)}\n\nExtract the recipe if present. Return ONLY valid JSON:\n{"title":"","serves":"","mealType":"breakfast|lunch|dinner|snack|drinks","intro":"","ingredients":[],"steps":[]}` }], 2048);
+      if (text) {
+        const p = parseClaudeRecipeJson(text);
+        if (p && p.ingredients?.length) {
+          ingredients = p.ingredients; steps = p.steps || [];
+          serves = p.serves || serves; intro = p.intro || '';
+          mealType = p.mealType || mealType;
+          if (p.title) title = p.title;
+        }
+      }
+    }
+  }
+
+  const titleL = title.toLowerCase();
+  if (/breakfast|egg|oat|pancake|waffle/.test(titleL)) mealType = 'breakfast';
+  else if (/salad|sandwich|wrap|soup/.test(titleL)) mealType = 'lunch';
+  else if (/cookie|cake|muffin|brownie|dessert|pie/.test(titleL)) mealType = 'snack';
+  else if (/juice|smoothie|drink|tea|coffee/.test(titleL)) mealType = 'drinks';
+
+  showParseProgress('Downloading thumbnail…', 0.75);
+  let imageDataUrl = null;
+  if (thumbnailUrl) imageDataUrl = await fetchImageAsDataUrl(thumbnailUrl);
+
+  hideParseProgress();
+  const chosenMealType = await pickMealType(mealType, title || 'YouTube Recipe');
+  showParseProgress('Saving…', 0.9);
+  const recipe = {
+    id: uid(), bookId: 'youtube', bookTitle: 'YouTube',
+    title: title || 'YouTube Recipe', chapter: '', mealType: chosenMealType,
+    imageName: null, serves, intro: intro || `From: ${url}`,
+    ingredients, steps, siml: [], addedAt: Date.now()
+  };
+  if (imageDataUrl) await storeImage(recipe.id, imageDataUrl);
+  setState(s => {
+    if (!s.books) s.books = [];
+    if (!s.recipes) s.recipes = [];
+    if (!s.books.find(b => b.id === 'youtube'))
+      s.books.unshift({ id: 'youtube', title: 'YouTube', recipeCount: 0, addedAt: Date.now() });
+    s.recipes.unshift(recipe);
+    const book = s.books.find(b => b.id === 'youtube');
+    if (book) book.recipeCount++;
+    return s;
+  });
+  hideParseProgress();
+  renderRecipesHeader(); renderRecipeTabs(); renderRecipeGrid();
+  showToast(`✅ "${recipe.title}" added from YouTube`);
+}
+
+function pickMealType(detectedType, recipeTitle) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.id = 'mealtype-picker-overlay';
+    const cats = [
+      { id:'breakfast', label:'🌅 Breakfast' },
+      { id:'lunch',     label:'☀️ Lunch' },
+      { id:'dinner',    label:'🌙 Dinner' },
+      { id:'snack',     label:'🍿 Snack' },
+      { id:'drinks',    label:'🍹 Drinks' },
+    ];
+    overlay.innerHTML = `
+      <div class="mealtype-picker-box">
+        <div class="mealtype-picker-title">What category is this recipe?</div>
+        <div class="mealtype-picker-recipe">${esc(recipeTitle)}</div>
+        <div class="mealtype-picker-btns">
+          ${cats.map(c => `<button class="mealtype-picker-btn${c.id===detectedType?' active':''}" data-id="${c.id}">${c.label}</button>`).join('')}
+        </div>
+      </div>`;
+    overlay.querySelectorAll('.mealtype-picker-btn').forEach(btn => {
+      btn.onclick = () => { document.body.removeChild(overlay); resolve(btn.dataset.id); };
+    });
+    document.body.appendChild(overlay);
+  });
+}
+
+async function importRecipeFromUrl() {
+  const rawUrl = prompt('Paste recipe URL:');
+  if (!rawUrl || !rawUrl.trim()) return;
+  const url = rawUrl.trim();
+
+  if (/youtube\.com\/(watch|shorts)|youtu\.be\//.test(url)) return importFromYouTube(url);
+
+  const PROXY = 'https://corsproxy.io/?url=';
+
+  showParseProgress('Fetching recipe…', 0.1);
+  let html;
+  try {
+    const resp = await fetch(PROXY + encodeURIComponent(url));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    html = await resp.text();
+  } catch(e) {
+    hideParseProgress();
+    alert('Could not fetch URL: ' + e.message);
+    return;
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  // ── 1. Try JSON-LD schema.org/Recipe ──────────────────────────────────
+  let title, ingredients = [], steps = [], serves = '', intro = '', imageUrl = null, mealType = 'dinner';
+
+  const ldScripts = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+  let schema = null;
+  for (const s of ldScripts) {
+    try {
+      const json = JSON.parse(s.textContent);
+      const find = (obj) => {
+        if (!obj) return null;
+        if (obj['@type'] === 'Recipe') return obj;
+        if (Array.isArray(obj)) { for (const i of obj) { const r = find(i); if (r) return r; } }
+        if (typeof obj === 'object') { for (const v of Object.values(obj)) { const r = find(v); if (r) return r; } }
+        return null;
+      };
+      schema = find(json);
+      if (schema) break;
+    } catch {}
+  }
+
+  if (schema) {
+    title = schema.name || '';
+    serves = typeof schema.recipeYield === 'string' ? schema.recipeYield
+           : Array.isArray(schema.recipeYield) ? schema.recipeYield[0] : '';
+    intro = schema.description || '';
+
+    if (Array.isArray(schema.recipeIngredient)) {
+      ingredients = schema.recipeIngredient.map(s => typeof s === 'string' ? s : '').filter(Boolean);
+    }
+
+    const instrRaw = schema.recipeInstructions;
+    if (Array.isArray(instrRaw)) {
+      steps = instrRaw.map(i => {
+        if (typeof i === 'string') return i;
+        if (i.text) return i.text;
+        if (i['@type'] === 'HowToSection' && Array.isArray(i.itemListElement))
+          return i.itemListElement.map(s => s.text || s).join(' ');
+        return '';
+      }).filter(Boolean);
+    } else if (typeof instrRaw === 'string') {
+      steps = [instrRaw];
+    }
+
+    const imgRaw = schema.image;
+    if (typeof imgRaw === 'string') imageUrl = imgRaw;
+    else if (Array.isArray(imgRaw) && imgRaw.length) imageUrl = typeof imgRaw[0] === 'string' ? imgRaw[0] : imgRaw[0].url;
+    else if (imgRaw && imgRaw.url) imageUrl = imgRaw.url;
+  }
+
+  // ── 2. HTML fallback ──────────────────────────────────────────────────
+  if (!title) {
+    title = (doc.querySelector('meta[property="og:title"]') || {}).content
+         || doc.querySelector('h1')?.textContent?.trim() || 'Untitled Recipe';
+  }
+  if (!imageUrl) {
+    imageUrl = (doc.querySelector('meta[property="og:image"]') || {}).content || null;
+  }
+  if (!ingredients.length) {
+    // common selectors across major recipe sites
+    const selectors = [
+      '.wprm-recipe-ingredient', '.tasty-recipe-ingredient',
+      '[class*="ingredient"] li', '[class*="Ingredient"] li',
+      '.recipe-ingredients li', '.ingredients li',
+      '.ingredient-list li', '#ingredients li'
+    ];
+    for (const sel of selectors) {
+      const els = doc.querySelectorAll(sel);
+      if (els.length > 1) { ingredients = Array.from(els).map(e => e.textContent.trim()).filter(Boolean); break; }
+    }
+  }
+  if (!steps.length) {
+    const selectors = [
+      '.wprm-recipe-instruction-text', '.tasty-recipe-instruction',
+      '[class*="instruction"] li', '[class*="Instruction"] li',
+      '[class*="direction"] li', '[class*="Direction"] li',
+      '.recipe-instructions li', '.instructions li',
+      '.method li', '.method ol li', '#instructions li'
+    ];
+    for (const sel of selectors) {
+      const els = doc.querySelectorAll(sel);
+      if (els.length > 0) { steps = Array.from(els).map(e => e.textContent.trim()).filter(Boolean); break; }
+    }
+  }
+
+  // infer mealType from title keywords
+  const titleL = (title || '').toLowerCase();
+  if (/breakfast|egg|oat|pancake|waffle|granola|smoothie/.test(titleL)) mealType = 'breakfast';
+  else if (/lunch|salad|sandwich|wrap|soup|bowl/.test(titleL)) mealType = 'lunch';
+  else if (/cookie|cake|muffin|brownie|dessert|pie|pudding|tart/.test(titleL)) mealType = 'snack';
+  else if (/juice|drink|lemonade|tea|coffee|shake|cocktail|mocktail/.test(titleL)) mealType = 'drinks';
+
+  // source domain as book title
+  let bookTitle = 'Web Recipes';
+  try { bookTitle = new URL(url).hostname.replace(/^www\./, ''); } catch {}
+  const BOOK_ID = 'web-' + bookTitle.replace(/\W+/g, '-');
+
+  showParseProgress('Downloading image…', 0.6);
+
+  // ── 3. Fetch & compress image ─────────────────────────────────────────
+  let imageDataUrl = null;
+  if (imageUrl) imageDataUrl = await fetchImageAsDataUrl(imageUrl);
+
+  hideParseProgress();
+  const chosenMealType = await pickMealType(mealType, title.trim());
+  showParseProgress('Saving…', 0.9);
+
+  // ── 4. Save ───────────────────────────────────────────────────────────
+  const recipe = {
+    id: uid(), bookId: BOOK_ID, bookTitle,
+    title: title.trim(), chapter: '', mealType: chosenMealType,
+    imageName: null, serves, intro,
+    ingredients, steps, siml: [], addedAt: Date.now()
+  };
+
+  if (imageDataUrl) await storeImage(recipe.id, imageDataUrl);
+
+  setState(s => {
+    if (!s.books) s.books = [];
+    if (!s.recipes) s.recipes = [];
+    if (!s.books.find(b => b.id === BOOK_ID))
+      s.books.unshift({ id: BOOK_ID, title: bookTitle, recipeCount: 0, addedAt: Date.now() });
+    s.recipes.unshift(recipe);
+    const book = s.books.find(b => b.id === BOOK_ID);
+    if (book) book.recipeCount++;
+    return s;
+  });
+
+  hideParseProgress();
+  renderRecipesHeader();
+  renderRecipeTabs();
+  renderRecipeGrid();
+  showToast(`✅ "${recipe.title}" added from ${bookTitle}`);
+}
+
+async function parsePdf(file) {
+  if (!window.pdfjsLib) {
+    alert('PDF parser not ready. Please refresh the page and try again.');
+    return;
+  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const bookId = uid();
+  const bookTitle = file.name.replace(/\.pdf$/i, '').replace(/\s*--\s*.*/g, '').trim();
+  showParseProgress('Loading PDF…', 0);
+
+  let pdf;
+  try {
+    const buf = await file.arrayBuffer();
+    pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  } catch(e) {
+    alert('Could not open PDF: ' + e.message);
+    hideParseProgress();
+    return;
+  }
+
+  const n = pdf.numPages;
+  const pageData = [];
+  for (let i = 1; i <= n; i++) {
+    if (i % 20 === 0) showParseProgress(`Reading page ${i} of ${n}…`, 0.05 + (i / n) * 0.55);
+    const pg = await pdf.getPage(i);
+    const vp = pg.getViewport({ scale: 1 });
+    const tc = await pg.getTextContent();
+    pageData.push({
+      w: vp.width, h: vp.height,
+      items: tc.items.filter(x => x.str && x.str.trim()).map(x => ({
+        t: x.str,
+        x: x.transform[4],
+        y: x.transform[5],
+        fh: Math.abs(x.transform[3])
+      }))
+    });
+  }
+
+  showParseProgress('Extracting recipes…', 0.65);
+  const recipes = pdfExtractRecipes(pageData, bookId, bookTitle);
+
+  if (!recipes.length) {
+    alert('No recipes found in this PDF. The layout may not be supported yet.');
+    hideParseProgress();
+    return;
+  }
+
+  setState(s => {
+    s.recipes = [...recipes, ...(s.recipes || [])];
+    if (!s.books) s.books = [];
+    s.books.unshift({ id: bookId, title: bookTitle, recipeCount: recipes.length, addedAt: Date.now() });
+    return s;
+  });
+  storeBookFile(bookId, file);
+  hideParseProgress();
+  showToast(`Imported ${recipes.length} recipes from "${bookTitle}" ✓`);
+  renderRecipes();
+}
+
+function pdfIsGarbage(t) {
+  if (!t) return true;
+  const s = t.trim();
+  if (s.length < 2) return true;
+  if (/^\d{1,3}$/.test(s)) return true; // page number
+  const chars = s.replace(/\s/g, '');
+  if (chars.length < 3) return true;
+  // Repetitive OCR artifact: >55% same character
+  const freq = {};
+  for (const c of chars) freq[c] = (freq[c] || 0) + 1;
+  if (Math.max(...Object.values(freq)) / chars.length > 0.55 && chars.length > 6) return true;
+  // Symbol-only lines
+  if (/^[._\-~=*|/\\><^#@!$%&(){}\[\]]+$/.test(s)) return true;
+  // OCR decorative-line garbage: low ratio of real alpha/digit chars vs total
+  const alphaNum = (chars.match(/[a-zA-Z0-9]/g) || []).length;
+  if (chars.length > 8 && alphaNum / chars.length < 0.5) return true;
+  // Mixed random-case short tokens: looks like "l eee OE00 OO" — many 1-3 char tokens
+  const tokens = s.split(/\s+/);
+  if (tokens.length >= 4 && tokens.filter(tk => tk.length <= 3).length / tokens.length > 0.7) return true;
+  return false;
+}
+
+function pdfIsTitleLine(t) {
+  if (!t || t.length < 3 || t.length > 120) return false;
+  // Must start with capital letter
+  if (!/^[A-Z]/.test(t)) return false;
+  // Must be mostly alpha/space/comma/apostrophe/hyphen — real words
+  const nonWord = (t.match(/[^a-zA-Z0-9\s,\-'&()]/g) || []).length;
+  if (nonWord / t.length > 0.15) return false;
+  // Reject any all-caps string longer than 3 chars — labels, not recipe titles
+  const lower = (t.match(/[a-z]/g) || []).length;
+  if (lower === 0 && t.length > 3) return false;
+  return true;
+}
+
+function pdfExtractRecipes(pageData, bookId, bookTitle) {
+  const recipes = [];
+  let chapterMealType = 'dinner';
+
+  const MEAL_KW = {
+    breakfast: ['breakfast', 'morning', 'brunch'],
+    lunch: ['salad', 'soup', 'lunch', 'sides', 'salads', 'soups'],
+    snack: ['snack', 'appetizer', 'bite', 'dessert', 'sweet', 'bak', 'munchie'],
+    drinks: ['drink', 'beverage', 'smoothie', 'juice'],
+    dinner: ['dinner', 'main', 'entree', 'entrée', 'pasta', 'fish', 'seafood', 'meat', 'poultry', 'chicken', 'beef', 'pork'],
+  };
+
+  const BOOK_HEADER_RE = new RegExp(
+    bookTitle.split(/\s+/).slice(0, 4).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*'),
+    'i'
+  );
+
+  for (const pg of pageData) {
+    const { items, w } = pg;
+    if (items.length < 3) continue;
+
+    // Sort top-to-bottom (PDF y=0 is bottom, so descending y = top first)
+    items.sort((a, b) => b.y - a.y || a.x - b.x);
+
+    // Group into visual lines by Y grid (4px)
+    const lineMap = new Map();
+    for (const it of items) {
+      const yk = Math.round(it.y / 4) * 4;
+      if (!lineMap.has(yk)) lineMap.set(yk, []);
+      lineMap.get(yk).push(it);
+    }
+
+    const splitX = w * 0.46; // column divider — slightly left of center
+    const lines = Array.from(lineMap.entries())
+      .sort((a, b) => b[0] - a[0])
+      .map(([y, its]) => {
+        its.sort((a, b) => a.x - b.x);
+        const L = its.filter(i => i.x < splitX).map(i => i.t).join(' ').trim();
+        const R = its.filter(i => i.x >= splitX).map(i => i.t).join(' ').trim();
+        const full = its.map(i => i.t).join(' ').trim();
+        return { y, L, R, full };
+      })
+      .filter(l => l.full.length > 0);
+
+    const goodLines = lines.filter(l => !pdfIsGarbage(l.full));
+
+    // Chapter intro pages: very few good lines
+    if (goodLines.length < 6) {
+      const txt = goodLines.map(l => l.full).join(' ').toLowerCase();
+      for (const [mt, kws] of Object.entries(MEAL_KW)) {
+        if (kws.some(k => txt.includes(k))) { chapterMealType = mt; break; }
+      }
+      continue;
+    }
+
+    // CONTINUED pages — merge steps into previous recipe
+    if (/^continued:/i.test(goodLines[0]?.full || '')) {
+      if (recipes.length) {
+        const prev = recipes[recipes.length - 1];
+        for (const l of goodLines.slice(1)) {
+          if (pdfIsGarbage(l.full) || BOOK_HEADER_RE.test(l.full)) continue;
+          if (l.R) {
+            const st = l.R.replace(/^\d+\.\s*/, '').trim();
+            if (st.length > 8) {
+              if (/^\d+\./.test(l.R)) prev.steps.push(st);
+              else if (prev.steps.length) prev.steps[prev.steps.length - 1] += ' ' + st;
+            }
+          }
+        }
+      }
+      continue;
+    }
+
+    // Extract recipe
+    const titleParts = [], intro = [], ingredients = [], steps = [];
+    let serves = '', phase = 'title', foundLabel = false, lookForServesDigit = false;
+
+    for (const l of goodLines) {
+      const t = l.full.trim();
+      if (!t || pdfIsGarbage(t)) continue;
+
+      // Capture serves digit that appears on its own line immediately after a "SERVES" line
+      if (lookForServesDigit) {
+        const sm2 = t.match(/^(\d+(?:\s*(?:to|-)\s*\d+)?)/);
+        if (sm2) serves = 'Serves ' + sm2[1];
+        lookForServesDigit = false;
+        if (sm2) continue;
+      }
+
+      if (/^\d{1,3}$/.test(t)) continue;
+      if (BOOK_HEADER_RE.test(t) && t.length < 80) continue;
+
+      if (phase === 'title') {
+        // Dietary label lines: SHORT all-caps line with actual diet/allergen markers only
+        // Excludes generic words (INGREDIENTS, TIME, POT) that appear on non-recipe pages
+        const isLabel = /^[A-Z][A-Z0-9\-,\s]{2,}$/.test(t)
+          && t.length <= 80
+          && /\b(FREE|VEGAN|VEGETARIAN|DAIRY|EGG|NUT|GLUTEN|PALEO|KETO|WHOLE30|HALAL|KOSHER)\b/.test(t);
+        // "SERVES 4" — must have a digit immediately; plain "SERVES" alone is too generic
+        const isServes = /^SERVES?\s+\d/i.test(t);
+        // "SERVES" alone (digit on next line) — very specific, only if standalone
+        const isServesAlone = /^SERVES?\s*$/i.test(t);
+        if (isLabel || isServes || isServesAlone) {
+          const sm = t.match(/\bSERVES?\s*(\d+(?:\s*(?:to|-)\s*\d+)?)/i);
+          if (sm) serves = 'Serves ' + sm[1];
+          else if (isServesAlone) lookForServesDigit = true; // digit on next line
+          if (isLabel || isServes || isServesAlone) foundLabel = true;
+          phase = 'post-title';
+          continue;
+        }
+        // Only add lines that look like real title text — skip OCR decoration garbage
+        if (pdfIsTitleLine(t)) titleParts.push(t);
+        // Stop title after 2 lines (titles are short; more = OCR bleed)
+        if (titleParts.length >= 2) phase = 'post-title';
+        continue;
+      }
+
+      if (phase === 'post-title') {
+        const isLabel = /^[A-Z][A-Z0-9\-,\s]{2,}$/.test(t)
+          && t.length <= 80
+          && /\b(FREE|VEGAN|VEGETARIAN|DAIRY|EGG|NUT|GLUTEN|PALEO|KETO|WHOLE30|HALAL|KOSHER)\b/.test(t);
+        if (isLabel) {
+          const sm = t.match(/\bSERVES?\s*(\d+(?:\s*(?:to|-)\s*\d+)?)/i);
+          if (sm && !serves) serves = 'Serves ' + sm[1];
+          foundLabel = true;
+          continue;
+        }
+        phase = 'intro';
+        // fall through
+      }
+
+      if (phase === 'intro') {
+        // Transition to content when right col has a numbered step OR left col looks like a measurement
+        const rightIsStep = /^\d+\./.test(l.R);
+        const leftIsMeasure = /^(\d|[¼½¾]|Y[0-9]|[Aa]n?\s)/i.test(l.L);
+        if ((rightIsStep || leftIsMeasure) && (l.L || l.R)) {
+          phase = 'content';
+        } else {
+          if (intro.length < 5) intro.push(t);
+          continue;
+        }
+      }
+
+      if (phase === 'content') {
+        // Left = ingredient, Right = step
+        const lText = l.L ? l.L.replace(/^[•▪·\-–—*]\s*/, '').trim() : '';
+        // Callisto Media layout: step numbers appear alone in L col ("2.", "3.") as step markers
+        const isStepNumOnly = /^\d+\.\s*$/.test(lText);
+        if (l.L && !pdfIsGarbage(l.L) && !isStepNumOnly) {
+          // Strip trailing step-number bleed: "1 (16-ounce) bag frozen 1." → "1 (16-ounce) bag frozen"
+          const it = lText.replace(/\s+\d+\.\s*$/, '').trim();
+          if (it.length > 1) {
+            // Skip TOC entries: "67 Six: Sandwiches..." = page-number prefix + proper noun, no cooking units
+            const isTocLine = /^\d{2,3}\s+[A-Z]/.test(it) &&
+              !/\b(g\b|ml\b|oz\b|lb\b|cup|tsp|tbsp|tablespoon|teaspoon|clove|bunch|can\b|piece|slice|pound)/i.test(it);
+            if (!isTocLine) {
+              const isNew = /^(\d|[¼½¾]|Y[0-9])/i.test(it) || ingredients.length === 0;
+              if (isNew) ingredients.push(it);
+              else ingredients[ingredients.length - 1] += ' ' + it;
+            }
+          }
+        }
+        if (l.R && !pdfIsGarbage(l.R)) {
+          const rt = l.R.replace(/^\d+\.\s*/, '').trim();
+          if (rt.length > 5) {
+            // Skip TOC text-runs: multiple embedded page-number + capitalised-word patterns
+            const tocHits = (rt.match(/\b\d{2,3}\s+[A-Z]/g) || []).length;
+            if (tocHits < 3) {
+              // New step when R starts with number OR L col had a step-number-only marker
+              if (/^\d+\./.test(l.R) || isStepNumOnly) steps.push(rt);
+              else if (steps.length) steps[steps.length - 1] += ' ' + rt;
+              else steps.push(rt);
+            }
+          }
+        }
+      }
+    }
+
+    const title = titleParts.join(' ').trim();
+    if (!title || title.length < 3) continue;
+    if (!ingredients.length && !steps.length) continue;
+    // Require dietary label AND at least some structure — OR strong structure alone for non-labeled PDFs
+    if (foundLabel && (ingredients.length < 1 || steps.length < 1)) continue;
+    if (!foundLabel && !(ingredients.length >= 4 && steps.length >= 2)) continue;
+
+    // Scan intro narrative for serves pattern: "This serves 4" / "Makes 6 servings"
+    if (!serves && intro.length) {
+      const introBlob = intro.join(' ');
+      const sm3 = introBlob.match(/\b(?:serves?|yields?|makes?)\s+(\d+(?:\s*(?:to|-|–)\s*\d+)?)\s*(?:serving|portion|person|people)?/i);
+      if (sm3) serves = 'Serves ' + sm3[1];
+    }
+
+    // mealType from title keywords (override chapter default)
+    let mealType = chapterMealType;
+    const tl = title.toLowerCase();
+    if (/breakfast|waffle|pancake|granola|oatmeal|french toast|frittata|scrambled|egg.muffin/i.test(tl)) mealType = 'breakfast';
+    else if (/salad|sandwich|wrap|toast|hummus|dip|feta|chickpea|avocado|tabbouleh|bruschetta|flatbread/i.test(tl)) mealType = 'lunch';
+    else if (/soup|bisque|chowder|stew|lentil.soup|bean.soup/i.test(tl)) mealType = 'lunch';
+    else if (/ricotta|cheese|yogurt|panna cotta|parfait|mousse|dessert|cake|cookie|brownie|pudding|tart|gelato|sorbet|baklava|halva|fruit salad|fruit\b/i.test(tl)) mealType = 'snack';
+    else if (/smoothie|juice\b|cocktail|lemonade|lassi/i.test(tl)) mealType = 'drinks';
+
+    recipes.push({
+      id: uid(), title, bookId, bookTitle,
+      chapter: chapterMealType,
+      mealType,
+      imageBase64: null,
+      serves,
+      intro: intro.join(' ').slice(0, 300),
+      ingredients: ingredients.filter(x => x.length > 1),
+      steps: steps.filter(x => x.length > 8),
+      siml: [], tags: [], notes: '',
+      addedAt: Date.now()
+    });
+  }
+
+  return recipes;
 }
 
 function showParseProgress(label, fraction) {
@@ -2497,7 +4333,7 @@ function getFilteredRecipes() {
 }
 
 async function deleteBook(bookId) {
-  await deleteBookImages(bookId);
+  await Promise.all([deleteBookImages(bookId), deleteBookFile(bookId)]);
   setState(s => {
     s.recipes = (s.recipes || []).filter(r => r.bookId !== bookId);
     s.books = (s.books || []).filter(b => b.id !== bookId);
@@ -2528,8 +4364,14 @@ function renderRecipesHeader() {
         <button class="rv-add-book-btn" onclick="document.getElementById('rv-epub-input').click()">
           📥 Add Book
         </button>
-        <input type="file" id="rv-epub-input" accept=".epub" style="display:none"
-          onchange="parseEpub(this.files[0]).then(()=>{this.value=''})">
+        <button class="rv-add-book-btn" onclick="importRecipeFromUrl()" style="background:rgba(96,165,250,0.12);border-color:rgba(96,165,250,0.25);color:#60a5fa;">
+          📎 URL
+        </button>
+        <button class="rv-add-book-btn" onclick="importRecipeFromScreenshot()" style="background:rgba(34,211,160,0.1);border-color:rgba(34,211,160,0.25);color:#22d3a0;">
+          📸 Photo
+        </button>
+        <input type="file" id="rv-epub-input" accept=".epub,.pdf" style="display:none"
+          onchange="handleBookFile(this.files[0]).then(()=>{this.value=''})">
       </div>
     </div>
     ${books.length > 0 ? `
@@ -2538,6 +4380,7 @@ function renderRecipesHeader() {
         <div class="rv-book-chip">
           <span class="rv-book-chip-name">📗 ${esc(b.title)}</span>
           <span class="rv-book-chip-count">${b.recipeCount} recipes</span>
+          <button class="rv-book-chip-reimport" onclick="reimportBook('${esc(b.id)}',event)" title="Re-import (refresh) book">↺</button>
           <button class="rv-book-chip-del" onclick="deleteBook('${esc(b.id)}')" title="Remove book">✕</button>
         </div>`).join('')}
     </div>` : ''}`;
@@ -2576,6 +4419,7 @@ function recipeCardHtml(recipe, imageDataUrl) {
     ? `<span class="rv-tag rv-tag-serves">${recipe.serves.replace(/^Serves\s*/i,'').trim()} servings</span>`
     : '';
 
+  const hasNote = !!(recipe.notes && recipe.notes.trim());
   return `<div class="rv-card" onclick="showRecipeDetail('${recipe.id}')">
     <div class="rv-card-img">
       ${imgHtml}
@@ -2589,6 +4433,21 @@ function recipeCardHtml(recipe, imageDataUrl) {
         ${simlHtml}${servesHtml}
       </div>
     </div>
+    <button class="rv-card-del-btn"
+      onclick="event.stopPropagation();deleteRecipe('${recipe.id}')"
+      title="Delete this recipe">
+      ✕
+    </button>
+    <button class="rv-card-share-btn"
+      onclick="event.stopPropagation();shareRecipeWhatsApp('${recipe.id}')"
+      title="Share on WhatsApp">
+      📲
+    </button>
+    <button class="rv-card-note-btn ${hasNote?'has-note':''}"
+      onclick="event.stopPropagation();showRecipeDetail('${recipe.id}',true)"
+      title="${hasNote?'Edit note':'Add note'}">
+      💬${hasNote?' ✓':''}
+    </button>
   </div>`;
 }
 
@@ -2605,13 +4464,13 @@ async function renderRecipeGrid() {
         onclick="document.getElementById('rv-epub-input').click()"
         ondragover="event.preventDefault();this.classList.add('drag-over')"
         ondragleave="this.classList.remove('drag-over')"
-        ondrop="event.preventDefault();this.classList.remove('drag-over');parseEpub(event.dataTransfer.files[0])">
+        ondrop="event.preventDefault();this.classList.remove('drag-over');handleBookFile(event.dataTransfer.files[0])">
         <div class="rv-import-icon">📚</div>
         <div class="rv-import-title">Add your first recipe book</div>
-        <div class="rv-import-sub">Drop an EPUB here or click to choose a file.<br>All recipes, chapters, and photos are extracted automatically.</div>
+        <div class="rv-import-sub">Drop an EPUB or PDF here or click to choose a file.<br>All recipes, chapters, and photos are extracted automatically.</div>
         <div class="rv-import-formats">
           <span class="rv-fmt-chip">EPUB</span>
-          <span class="rv-fmt-chip" style="opacity:0.4">PDF (soon)</span>
+          <span class="rv-fmt-chip">PDF</span>
         </div>
       </div>`;
     return;
@@ -2649,7 +4508,7 @@ function renderRecipes() {
 
 sectionRenderers['recipes'] = renderRecipes;
 
-async function showRecipeDetail(id) {
+async function showRecipeDetail(id, focusNotes) {
   const state = getState();
   const recipe = (state.recipes || []).find(r => r.id === id);
   if (!recipe) return;
@@ -2701,11 +4560,122 @@ async function showRecipeDetail(id) {
               <ol class="rv-step-list">${stepsHtml}</ol>
             </div>
           </div>
+          <button class="rv-modal-share-btn" onclick="shareRecipeWhatsApp('${recipe.id}')">
+            📲 Share on WhatsApp
+          </button>
+          <div class="rv-modal-notes">
+            <div class="rv-modal-notes-title">My Notes</div>
+            <textarea id="rv-note-${recipe.id}"
+              placeholder="Add personal notes, substitutions, tweaks…"
+              oninput="saveRecipeNote('${recipe.id}', this.value)"
+            >${esc(recipe.notes || '')}</textarea>
+          </div>
         </div>
       </div>
     </div>`;
 
   document.body.style.overflow = 'hidden';
+  if (focusNotes) {
+    requestAnimationFrame(() => {
+      const ta = document.getElementById(`rv-note-${id}`);
+      if (ta) { ta.focus(); ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
+  }
+}
+
+function saveRecipeNote(id, text) {
+  setState(s => {
+    const r = (s.recipes || []).find(r => r.id === id);
+    if (r) r.notes = text;
+    return s;
+  });
+  // Refresh note button indicator on card without full re-render
+  const btn = document.querySelector(`[onclick*="showRecipeDetail('${id}')"] .rv-card-note-btn`);
+  if (btn) {
+    const hasNote = !!(text && text.trim());
+    btn.className = 'rv-card-note-btn' + (hasNote ? ' has-note' : '');
+    btn.title = hasNote ? 'Edit note' : 'Add note';
+    btn.innerHTML = '💬' + (hasNote ? ' ✓' : '');
+  }
+}
+
+async function deleteRecipe(id) {
+  const state = getState();
+  const recipe = (state.recipes || []).find(r => r.id === id);
+  if (!recipe) return;
+  if (!confirm(`Delete "${recipe.title}"?`)) return;
+  setState(s => { s.recipes = (s.recipes || []).filter(r => r.id !== id); return s; });
+  // Remove image from IndexedDB
+  try {
+    const db = await openImageDB();
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).delete(id);
+  } catch(e) {}
+  renderRecipes();
+}
+
+function shareRecipeWhatsApp(id) {
+  const recipe = (getState().recipes || []).find(r => r.id === id);
+  if (!recipe) return;
+  const lines = [];
+  lines.push(`*${recipe.title}*`);
+  if (recipe.bookTitle) lines.push(`_${recipe.bookTitle}_`);
+  if (recipe.serves) lines.push(`Serves: ${recipe.serves.replace(/^Serves\s*/i,'').trim()}`);
+  lines.push('');
+  if (recipe.ingredients && recipe.ingredients.length) {
+    lines.push('*Ingredients*');
+    recipe.ingredients.forEach(i => lines.push(`• ${i}`));
+    lines.push('');
+  }
+  if (recipe.steps && recipe.steps.length) {
+    lines.push('*Method*');
+    recipe.steps.forEach((s, i) => lines.push(`${i+1}. ${s}`));
+  }
+  const text = lines.join('\n');
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+async function reimportBook(bookId, event) {
+  event.stopPropagation();
+
+  // Save notes before anything else
+  const state = getState();
+  const savedNotes = {};
+  (state.recipes || []).filter(r => r.bookId === bookId && r.notes).forEach(r => {
+    savedNotes[r.title.toLowerCase()] = r.notes;
+  });
+
+  const restoreNotes = () => {
+    if (Object.keys(savedNotes).length === 0) return;
+    setState(s => {
+      (s.recipes || []).forEach(r => {
+        const note = savedNotes[r.title.toLowerCase()];
+        if (note) r.notes = note;
+      });
+      return s;
+    });
+    renderRecipes();
+  };
+
+  const doReimport = async (file) => {
+    await deleteBook(bookId);
+    await handleBookFile(file);
+    restoreNotes();
+  };
+
+  // Try stored file first — no file picker needed
+  const stored = await getBookFile(bookId);
+  if (stored) {
+    await doReimport(stored);
+    return;
+  }
+
+  // Fallback: file picker (books imported before this fix)
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.epub,.pdf';
+  input.onchange = async () => { if (input.files[0]) await doReimport(input.files[0]); };
+  input.click();
 }
 
 function closeRecipeDetail() {
