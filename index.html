@@ -1960,8 +1960,7 @@ function showToast(msg) {
   setTimeout(() => t.style.opacity = '0', 2500);
 }
 
-sectionRenderers['today'] = renderToday;
-switchTab('today');
+// startup moved to end of script — avoids WORKOUT_PLAN/sectionRenderers temporal dead zone
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -2202,7 +2201,7 @@ function getTodayWorkoutDay() {
 function getOrInitTodayWorkout(dayIndex) {
   const s = getState();
   const todayStr = today();
-  const tw = s.health.todayWorkout;
+  const tw = s.health?.todayWorkout;
   if (tw && tw.date === todayStr && tw.dayIndex === dayIndex) return tw;
   // Init fresh for this day/date
   const plan = WORKOUT_PLAN[dayIndex];
@@ -4918,6 +4917,10 @@ function closeRecipeDetail() {
 }
 
 window.addEventListener('load',()=>{ setTimeout(initGoogleAPI,1000); });
+
+// All consts/sectionRenderers now defined — safe to run startup
+sectionRenderers['today'] = renderToday;
+switchTab('today');
 </script>
 
 </body>
