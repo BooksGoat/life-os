@@ -927,6 +927,37 @@
       #header { margin-left: 200px; }
     }
 
+    /* ── TODAY v2 ───────────────────────────────────────── */
+    .today-wrap { padding: 16px; max-width: 600px; margin: 0 auto; }
+    .today-greeting-v2 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .today-date-v2 { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+    .today-rings { display: flex; gap: 12px; margin-bottom: 20px; justify-content: center; }
+    .ring-card {
+      flex: 1; max-width: 140px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .ring-svg { transform: rotate(-90deg); overflow: visible; }
+    .ring-track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 5; }
+    .ring-fill  { fill: none; stroke-width: 5; stroke-linecap: round;
+                  transition: stroke-dashoffset 0.7s cubic-bezier(.4,0,.2,1); }
+    .ring-label { font-size: 11px; font-weight: 700; color: var(--text); text-align: center; }
+    .ring-sub   { font-size: 10px; color: var(--muted); text-align: center; }
+
+    .today-preview-card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 12px; cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .today-preview-card:hover { background: rgba(255,255,255,0.07); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .tpc-header { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .tpc-title  { font-size: 16px; font-weight: 700; color: var(--text); }
+    .tpc-sub    { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .tpc-chips  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .tpc-chip   { font-size: 11px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; color: var(--text); }
+    .tpc-recipe-img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
+
   </style>
 </head>
 <body>
@@ -1025,90 +1056,59 @@
     <!-- CONTENT -->
     <main id="content">
 
-      <!-- TODAY -->
+      <!-- TODAY v2 -->
       <section id="today" class="section active">
-  <div id="today-greeting" class="section-title"></div>
-  <div class="grid-4" style="margin-bottom:24px;">
-    <div class="card" style="grid-column:span 2;">
-      <div class="label">Today's Habits</div>
-      <div id="habit-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div class="label">Streak</div>
-      <div id="streak-display" class="big-num" style="color:var(--gold);">0🔥</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;">consecutive days</div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div class="label">Date</div>
-      <div id="today-date" style="font-size:15px;font-weight:600;color:var(--text);margin-top:6px;"></div>
-    </div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="label" style="margin-bottom:10px;">Calendar — Today</div>
-      <div id="today-calendar"><div style="color:var(--muted);font-size:13px;">Connect Google Calendar in Settings to see events</div></div>
-    </div>
-    <div class="card">
-      <div class="label" style="margin-bottom:10px;">Quick Note → Ideas</div>
-      <textarea id="quick-note" rows="4" placeholder="Capture a thought…" style="resize:none;"></textarea>
-      <button class="btn btn-primary" style="margin-top:10px;width:100%;" onclick="saveQuickNote()">Save to Ideas</button>
-    </div>
-  </div>
-  <div class="sc-grid">
-    <div class="sc-card" onclick="navigate('recipes')">
-      <div class="sc-visual" id="sc-recipes-visual" style="background:linear-gradient(135deg,#1a0c00 0%,#3d2200 50%,#1f1000 100%)">
-        <div class="sc-collage" id="sc-recipes-collage" style="display:none"></div>
-        <div class="sc-emoji" id="sc-recipes-emoji">🍳</div>
-      </div>
-      <div class="sc-label">
-        <div class="sc-name">Recipes</div>
-        <div class="sc-sub" id="sc-recipes-sub">What's cooking</div>
-      </div>
-    </div>
-    <div class="sc-card" onclick="navigate('watch')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#050514 0%,#0d0d3a 50%,#080830 100%)">
-        <div class="sc-emoji">🎬</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Watch</div><div class="sc-sub">Movies &amp; series</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('health')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#021208 0%,#0a3018 50%,#052010 100%)">
-        <div class="sc-emoji">💪</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Health</div><div class="sc-sub">Body &amp; energy</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('mind')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#0e0220 0%,#280850 50%,#180535 100%)">
-        <div class="sc-emoji">🧠</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Mind</div><div class="sc-sub">Growth &amp; focus</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('books')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#120800 0%,#2e1a00 50%,#1c1000 100%)">
-        <div class="sc-emoji">📚</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Books</div><div class="sc-sub">Reading list</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('family')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#150208 0%,#380a20 50%,#220514 100%)">
-        <div class="sc-emoji">👨‍👩‍👧</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Family</div><div class="sc-sub">People who matter</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('ideas')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#0e0e00 0%,#302800 50%,#201e00 100%)">
-        <div class="sc-emoji">💡</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Ideas</div><div class="sc-sub">Sparks &amp; notes</div></div>
-    </div>
-    <div class="sc-card" onclick="navigate('settings')">
-      <div class="sc-visual" style="background:linear-gradient(135deg,#080810 0%,#141428 50%,#0a0a1c 100%)">
-        <div class="sc-emoji">⚙️</div>
-      </div>
-      <div class="sc-label"><div class="sc-name">Settings</div><div class="sc-sub">System</div></div>
-    </div>
-  </div>
-</section>
+        <div class="today-wrap">
+          <div id="today-greeting-v2" class="today-greeting-v2"></div>
+          <div id="today-date-v2" class="today-date-v2"></div>
+
+          <!-- Progress Rings -->
+          <div class="today-rings">
+            <div class="ring-card">
+              <svg class="ring-svg" width="64" height="64" viewBox="0 0 64 64">
+                <circle class="ring-track" cx="32" cy="32" r="26"/>
+                <circle class="ring-fill" id="ring-workout-fill" cx="32" cy="32" r="26"/>
+              </svg>
+              <div class="ring-label">💪 Workout</div>
+              <div class="ring-sub" id="ring-workout-sub">—</div>
+            </div>
+            <div class="ring-card">
+              <svg class="ring-svg" width="64" height="64" viewBox="0 0 64 64">
+                <circle class="ring-track" cx="32" cy="32" r="26"/>
+                <circle class="ring-fill" id="ring-supp-fill" cx="32" cy="32" r="26"/>
+              </svg>
+              <div class="ring-label">💊 Supps</div>
+              <div class="ring-sub" id="ring-supp-sub">—</div>
+            </div>
+            <div class="ring-card">
+              <svg class="ring-svg" width="64" height="64" viewBox="0 0 64 64">
+                <circle class="ring-track" cx="32" cy="32" r="26"/>
+                <circle class="ring-fill" id="ring-eat-fill" cx="32" cy="32" r="26"/>
+              </svg>
+              <div class="ring-label">🍽 Window</div>
+              <div class="ring-sub" id="ring-eat-sub">—</div>
+            </div>
+          </div>
+
+          <!-- Today's Workout -->
+          <div class="today-preview-card" onclick="switchTab('health')">
+            <div class="tpc-header">Today's Workout</div>
+            <div id="today-workout-preview"><div class="tpc-sub">Loading…</div></div>
+          </div>
+
+          <!-- Next Supplement -->
+          <div class="today-preview-card" onclick="switchTab('health');switchHealthTab('supplements')">
+            <div class="tpc-header">Next Supplement</div>
+            <div id="today-supp-preview"><div class="tpc-sub">Loading…</div></div>
+          </div>
+
+          <!-- Recipe of the Day -->
+          <div class="today-preview-card" onclick="switchTab('recipes')">
+            <div class="tpc-header">Recipe of the Day</div>
+            <div id="today-recipe-preview"><div class="tpc-sub">No recipes yet</div></div>
+          </div>
+        </div>
+      </section>
 
       <!-- RECIPES -->
       <section id="recipes" class="section"
@@ -1793,58 +1793,106 @@ function renderToday() {
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-  document.getElementById('today-greeting').textContent = greeting + ' ☀️';
-  document.getElementById('today-date').innerHTML =
-    `${days[now.getDay()]}<br><strong style="font-size:22px;">${now.getDate()} ${months[now.getMonth()]}</strong>`;
+  const gEl = document.getElementById('today-greeting-v2');
+  const dEl = document.getElementById('today-date-v2');
+  if (gEl) gEl.textContent = greeting + ' ☀️';
+  if (dEl) dEl.textContent = days[now.getDay()] + ' · ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
 
-  const state = getState();
-  const todayKey = today();
-  const todayHabits = state.habits[todayKey] || {};
-
-  document.getElementById('habit-list').innerHTML = HABITS.map(h => `
-    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-      <input type="checkbox" ${todayHabits[h.id] ? 'checked' : ''}
-        onchange="toggleHabit('${h.id}', this.checked)"
-        style="width:18px;height:18px;accent-color:var(--amber);cursor:pointer;">
-      <span style="font-size:14px;${todayHabits[h.id] ? 'text-decoration:line-through;opacity:0.5;' : ''}">${h.label}</span>
-    </label>
-  `).join('');
-
-  document.getElementById('streak-display').textContent = (state.streak || 0) + '🔥';
-  renderTodayRecipeCard();
+  renderProgressRings();
+  renderTodayWorkoutPreview();
+  renderTodaySupplementPreview();
+  renderTodayRecipePreview();
 }
 
-async function renderTodayRecipeCard() {
+function renderProgressRings() {
+  const state = getState();
+  const now = new Date();
+  const currentHour = now.getHours() + now.getMinutes() / 60;
+  const todayStr = today();
+  const R = 26, CIRC = 2 * Math.PI * R;
+
+  function setRing(fillId, subId, fraction, color, subText) {
+    const fill = document.getElementById(fillId);
+    const sub  = document.getElementById(subId);
+    if (!fill) return;
+    fill.style.strokeDasharray  = CIRC;
+    fill.style.strokeDashoffset = CIRC * (1 - Math.min(1, Math.max(0, fraction)));
+    fill.style.stroke = color;
+    if (sub) sub.textContent = subText;
+  }
+
+  // Workout ring
+  const workoutDone = (state.health?.workoutLogs || []).some(l => l.date === todayStr);
+  setRing('ring-workout-fill','ring-workout-sub', workoutDone ? 1 : 0, '#22d3a0', workoutDone ? 'Done ✓' : 'Pending');
+
+  // Supplement ring — 9 alarm slots
+  const ALARM_HOURS = [10, 12.5, 13, 14, 16, 19, 19.5, 20, 22];
+  const passed = ALARM_HOURS.filter(h => currentHour >= h).length;
+  setRing('ring-supp-fill','ring-supp-sub', passed / ALARM_HOURS.length, '#8a5cf6', passed + '/' + ALARM_HOURS.length);
+
+  // Eating window ring (10:00–20:00)
+  let eatFrac = 0, eatSub = 'Fasting 🔒';
+  if (currentHour >= 10 && currentHour <= 20) {
+    eatFrac = (currentHour - 10) / 10;
+    const minsLeft = Math.round((20 - currentHour) * 60);
+    eatSub = minsLeft + 'm left';
+  } else if (currentHour > 20) { eatFrac = 1; }
+  setRing('ring-eat-fill','ring-eat-sub', eatFrac, '#f09030', eatSub);
+}
+
+function renderTodayWorkoutPreview() {
+  const el = document.getElementById('today-workout-preview');
+  if (!el) return;
+  const now = new Date();
+  const dayIndex = (now.getDay() + 6) % 7; // Mon=0
+  if (typeof WORKOUT_PLAN === 'undefined' || dayIndex >= WORKOUT_PLAN.length) {
+    el.innerHTML = '<div class="tpc-sub">Rest day 🛌</div>'; return;
+  }
+  const plan = WORKOUT_PLAN[dayIndex];
+  const chips = plan.exercises.slice(0, 3).map(e =>
+    `<span class="tpc-chip">${esc(e.name)}</span>`).join('');
+  const more = plan.exercises.length > 3 ? `<span class="tpc-chip">+${plan.exercises.length - 3} more</span>` : '';
+  el.innerHTML = `<div class="tpc-title">${esc(plan.title)}</div><div class="tpc-chips">${chips}${more}</div>`;
+}
+
+function renderTodaySupplementPreview() {
+  const el = document.getElementById('today-supp-preview');
+  if (!el) return;
+  const now = new Date();
+  const currentHour = now.getHours() + now.getMinutes() / 60;
+  const SLOTS = [
+    { hour:10,    label:'Breakfast Stack' },
+    { hour:12.5,  label:'Mid-Day Blockade' },
+    { hour:13,    label:'Pre-Workout Lunch' },
+    { hour:14,    label:'Training Block' },
+    { hour:16,    label:'Post-Workout Refuel' },
+    { hour:19,    label:'Evening Blockade' },
+    { hour:19.5,  label:'Dinner Stack' },
+    { hour:20,    label:'Fast Begins' },
+    { hour:22,    label:'Night Stack' },
+  ];
+  const next = SLOTS.find(s => s.hour > currentHour);
+  if (!next) { el.innerHTML = '<div class="tpc-sub">All done for today 🌙</div>'; return; }
+  const minsUntil = Math.round((next.hour - currentHour) * 60);
+  const h = Math.floor(minsUntil / 60), m = minsUntil % 60;
+  const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+  el.innerHTML = `<div class="tpc-title">${esc(next.label)}</div><div class="tpc-sub">in ${timeStr}</div>`;
+}
+
+async function renderTodayRecipePreview() {
+  const el = document.getElementById('today-recipe-preview');
+  if (!el) return;
   const state = getState();
   const recipes = state.recipes || [];
-  const books = state.books || [];
-  const collage = document.getElementById('sc-recipes-collage');
-  const emojiEl = document.getElementById('sc-recipes-emoji');
-  const sub = document.getElementById('sc-recipes-sub');
-  if (!collage) return;
-  if (sub) sub.textContent = recipes.length > 0
-    ? `${recipes.length} recipe${recipes.length !== 1 ? 's' : ''} · ${books.length} book${books.length !== 1 ? 's' : ''}`
-    : 'What\'s cooking';
-  if (recipes.length === 0) return;
-  const sample = recipes.slice(0, 4);
-  const panels = [];
-  for (let i = 0; i < 4; i++) {
-    const r = sample[i % sample.length];
-    const img = r ? await getImage(r.id) : null;
-    panels.push({ img, recipe: r });
-  }
-  const hasAnyImg = panels.some(p => p.img);
-  if (!hasAnyImg) return;
-  collage.innerHTML = panels.map(p => {
-    const emoji = p.recipe ? (MEAL_PLACEHOLDER_EMOJI[p.recipe.mealType] || '🍽️') : '🍽️';
-    return p.img
-      ? `<div><img src="${p.img}" loading="lazy"></div>`
-      : `<div style="background:#0d0d1a;display:flex;align-items:center;justify-content:center;font-size:24px;">${emoji}</div>`;
-  }).join('');
-  collage.style.display = 'grid';
-  if (emojiEl) emojiEl.style.display = 'none';
+  if (!recipes.length) { el.innerHTML = '<div class="tpc-sub">No recipes yet — add some!</div>'; return; }
+  const r = recipes[Math.floor(Math.random() * Math.min(recipes.length, 20))];
+  const img = await getImage(r.id);
+  el.innerHTML = `
+    <div class="tpc-title">${esc(r.title)}</div>
+    <div class="tpc-sub">${esc(r.bookTitle || '')}${r.serves ? ' · ' + esc(r.serves) : ''}</div>
+    ${img ? `<img src="${img}" class="tpc-recipe-img" loading="lazy">` : ''}`;
 }
 
 function toggleHabit(habitId, checked) {
