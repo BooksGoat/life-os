@@ -1748,24 +1748,32 @@ if (!localStorage.getItem(STORE_KEY)) {
 // ── ROUTER ───────────────────────────────────────────────
 const sectionRenderers = {};
 
-function navigate(sectionId) {
+function switchTab(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-  const target = document.getElementById(sectionId) || document.getElementById('today');
+  const target = document.getElementById(id) || document.getElementById('today');
   target.classList.add('active');
 
-  const btn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
-  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.rail-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === id));
 
-  const homeBtn = document.getElementById('home-btn');
-  if (homeBtn) homeBtn.classList.toggle('visible', sectionId !== 'today');
+  if (typeof sectionRenderers !== 'undefined' && sectionRenderers[id]) sectionRenderers[id]();
+  window.scrollTo(0, 0);
+}
 
-  if (sectionRenderers[sectionId]) sectionRenderers[sectionId]();
+function openMoreSheet() {
+  document.getElementById('more-sheet-overlay').style.display = 'block';
+  document.getElementById('more-sheet').style.display = 'block';
+}
 
-  if (sectionId !== 'search-results') {
-    document.getElementById('global-search').value = '';
-  }
+function closeMoreSheet() {
+  document.getElementById('more-sheet-overlay').style.display = 'none';
+  document.getElementById('more-sheet').style.display = 'none';
+}
+
+function navigate(sectionId) {
+  switchTab(sectionId);
 }
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1886,6 +1894,7 @@ function showToast(msg) {
 
 sectionRenderers['today'] = renderToday;
 renderToday();
+switchTab('today');
 
 if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
