@@ -1236,166 +1236,186 @@
     </div>
 
     <!-- Day Toggle -->
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon–Sat)</button>
-      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🛌 Rest Day (Sun)</button>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon, Tue, Thu, Fri)</button>
+      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🌿 Rest Day (Wed, Sat, Sun)</button>
     </div>
 
     <!-- Training Day Schedule -->
     <div id="supp-panel-training">
 
+      <div class="supp-slot" style="--slot-color:#a78bfa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
+          <span class="supp-slot-when">Hydrotherapy & circadian anchoring</span>
+          <span class="supp-alarm">⏰ 4:45 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">☕ Lung Cleanse Tea <b>1 cup</b> <em>immediately on wake</em></span>
+          <span class="supp-pill">☀️ Morning Sunlight <b>10–15 min</b> <em>5:00 AM — direct exposure</em></span>
+          <span class="supp-pill">🧘 Pranayama + Hatha Yoga <b>45 min</b> <em>5:15–6:00 AM</em></span>
+          <span class="supp-pill">🧊 Cold Shower (Cryotherapy) <b>6:00 AM</b></span>
+        </div>
+        <div class="supp-note">Sunlight anchors circadian rhythm. Cold shower reduces systemic inflammation, stimulates brown adipose tissue. Pranayama oxygenates tissues before the fast breaks.</div>
+      </div>
+
       <div class="supp-slot" style="--slot-color:#f09030;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKFAST</span>
-          <span class="supp-slot-when">The Fast-Breaker</span>
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
+          <span class="supp-slot-when">High-fat nutrient density — hormone synthesis</span>
           <span class="supp-alarm">⏰ 10:00 AM</span>
         </div>
         <div class="supp-pills">
-          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
-          <span class="supp-pill">Omega-3 EPA/DHA <b>1,000–2,000 mg</b></span>
-          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
+          <span class="supp-pill">🥚 Eggs + Avocado <b>high-fat meal</b></span>
+          <span class="supp-pill">Omega-3 Fish Oil <b>1,000–2,000 mg</b></span>
           <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
+          <span class="supp-pill">Morning Core Vitamins <em>D3+K2, Curcumin+Piperine</em></span>
         </div>
-        <div class="supp-note">Meal must contain dietary fat (eggs, olive oil, avocado) — fat-soluble D3 + Omega-3 cannot absorb without it.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#60a5fa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 MID-DAY BLOCKADE</span>
-          <span class="supp-slot-when">30 min before pre-workout lunch — empty stomach</span>
-          <span class="supp-alarm">⏰ 12:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 1</em></span>
-        </div>
-        <div class="supp-note">Lines the gut before the 1:00 PM meal. Intercepts bile acids, upregulates liver LDL receptors. Must be on empty stomach — food kills the effect.</div>
+        <div class="supp-note">High-fat meal provides raw materials for hormone synthesis without spiking insulin. Fat-soluble D3 + Omega-3 require dietary fat for absorption.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#22d3a0;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🍽 PRE-WORKOUT LUNCH</span>
-          <span class="supp-slot-when">Light Mediterranean meal — lean protein + complex carbs</span>
-          <span class="supp-alarm">⏰ 1:00 PM</span>
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">⚡ PRE-WORKOUT FUEL</span>
+          <span class="supp-slot-when">Stock liver glycogen — line the stomach</span>
+          <span class="supp-alarm">⏰ 12:00 PM</span>
         </div>
         <div class="supp-pills">
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">L-Carnitine <b>2,000 mg</b> <em>end of meal</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">Aged Garlic Extract <b>600–1,200 mg</b> <em>end of meal</em></span>
+          <span class="supp-pill">🍌 Light Snack <b>fruits, banana, or peanut butter</b></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>2 capsules</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield</em></span>
         </div>
-        <div class="supp-note">Sterols mix with food (blocks cholesterol absorption). L-Carnitine + Garlic taken right at end of meal — loads bloodstream at the 60-min pre-workout window. TMAO rule: never L-Carnitine without Garlic.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f472b6;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(244,114,182,0.15);color:#f472b6;">🏃 TRAINING BLOCK</span>
-          <span class="supp-slot-when">Sip continuously throughout session</span>
-          <span class="supp-alarm">⏰ 2:00–3:15 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Electrolyte Matrix — Sodium <b>500–1,000 mg</b> in water</span>
-        </div>
-        <div class="supp-note">Defend plasma volume throughout heavy barbell work and treadmill. Resting sodium at 131 mmol/L — plain water during 60+ min sessions dilutes it further. Non-negotiable.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#a78bfa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🥛 POST-WORKOUT REFUEL</span>
-          <span class="supp-slot-when">High-protein shake or snack — no supplements</span>
-          <span class="supp-alarm">⏰ 4:00 PM</span>
-        </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;">Trigger mTOR and muscle protein synthesis after 70–75kg barbell sessions. No supplements here — this window is purely for anabolic recovery nutrition.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#8a5cf6;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">💊 EVENING BLOCKADE</span>
-          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
-          <span class="supp-alarm">⏰ 7:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
-        </div>
-        <div class="supp-note">Second blockade before the final meal of the day. Critical for blunting evening carbohydrate glucose spikes. Empty stomach required.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#7c3aed;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">🌙 DINNER</span>
-          <span class="supp-slot-when">Final meal — finish by 8:00 PM sharp</span>
-          <span class="supp-alarm">⏰ 7:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 2 — during meal</em></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 2</em></span>
-        </div>
-        <div class="supp-note">Mix Sterols with food — blocks final dietary cholesterol absorption. Amla sustains endothelial protection overnight. Eating window closes at 8:00 PM.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ 14-HOUR FAST BEGINS</span>
-          <span class="supp-slot-when">Zero calories — plain water or herbal tea only</span>
-          <span class="supp-alarm" style="color:#5a5575;">🕗 8:00 PM</span>
-        </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow. Ashwagandha at 10:00 PM is safe — zero calories, does not break autophagy.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.3);color:#a09ab8;">🌑 NIGHT STACK</span>
-          <span class="supp-slot-when">During the fast — empty stomach</span>
-          <span class="supp-alarm">⏰ 10:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
-        </div>
-        <div class="supp-note">Zero calories — does not break the fast or autophagy. Lowers CNS stress, blunts post-training cortisol, optimises sleep architecture. Cycle: 8–12 weeks on → mandatory 2–4 weeks off.</div>
-      </div>
-
-    </div>
-
-    <!-- Rest Day (Sunday) Schedule -->
-    <div id="supp-panel-rest" class="hidden">
-      <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
-        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Sunday: same eating window (10 AM–8 PM), same blockade times. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no sodium drink</b>. No post-workout refuel slot.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f09030;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKFAST</span>
-          <span class="supp-slot-when">The Fast-Breaker — with dietary fat</span>
-          <span class="supp-alarm">⏰ 10:00 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
-          <span class="supp-pill">Omega-3 EPA/DHA <b>1,000–2,000 mg</b></span>
-          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine <b>2,000 mg</b> <em>rest day shift</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Aged Garlic Extract <b>600–1,200 mg</b> <em>rest day shift</em></span>
-        </div>
-        <div class="supp-note">L-Carnitine + Garlic move here since no workout window. Still take together — TMAO rule never has a day off. Lp(a) suppression requires daily saturation.</div>
+        <div class="supp-note">TMAO rule: never L-Carnitine without Garlic. Garlic acts as the critical TMAO-suppression shield. L-Carnitine loads bloodstream 2 hrs before training window.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#60a5fa;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 MID-DAY BLOCKADE</span>
-          <span class="supp-slot-when">30 min before lunch — empty stomach</span>
-          <span class="supp-alarm">⏰ 12:30 PM</span>
+          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 PRE-WORKOUT METABOLIC BLOCKADE</span>
+          <span class="supp-slot-when">Blunts delayed glycemic response from 12 PM fuel</span>
+          <span class="supp-alarm">⏰ 1:30 PM</span>
         </div>
         <div class="supp-pills">
-          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
           <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 1</em></span>
+          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
         </div>
-        <div class="supp-note">Lipid blockade never takes a day off. Same as training days.</div>
+        <div class="supp-note">Empty stomach required. Upregulates liver LDL receptors. Intercepts bile acids. Must be 30 min before training starts.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f472b6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(244,114,182,0.15);color:#f472b6;">🏋 THE BARBELL SESSION</span>
+          <span class="supp-slot-when">Sip electrolytes continuously throughout</span>
+          <span class="supp-alarm">⏰ 2:00–3:15 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Electrolyte + High-Sodium Water Matrix <b>500–1,000 mg sodium</b></span>
+        </div>
+        <div class="supp-note">Never plain water alone during session. Plasma sodium at 131 mmol/L — plain water during 60+ min sessions dilutes it further. Non-negotiable for performance and safety.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🔥 HEAT THERAPY</span>
+          <span class="supp-slot-when">Flush lactic acid, upregulate heat-shock proteins</span>
+          <span class="supp-alarm">⏰ 3:15–3:45 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">♨️ Steam / Sauna <b>15–20 min</b></span>
+          <span class="supp-pill">🚿 Clean Rinse after</span>
+        </div>
+        <div class="supp-note">Maximises blood flow post-training. Heat-shock proteins directly support cardiovascular health. Follow immediately with a rinse.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#8a5cf6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">🥩 POST-WORKOUT RECOVERY</span>
+          <span class="supp-slot-when">Drive nutrients into recovering muscle cells</span>
+          <span class="supp-alarm">⏰ 4:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">🍽 Heavy Post-Workout Lunch <b>high protein + clean carbs</b></span>
+          <span class="supp-pill" style="background:rgba(138,92,246,0.08);border-color:rgba(138,92,246,0.25);">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>2 capsules</em></span>
+          <span class="supp-pill" style="background:rgba(138,92,246,0.08);border-color:rgba(138,92,246,0.25);">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield</em></span>
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>during meal</em></span>
+        </div>
+        <div class="supp-note">L-Carnitine driven straight into recovering muscle cells via the lunch insulin response. Plant Sterols physically intercept dietary cholesterol. TMAO rule active.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 DOWN-REGULATION WINDOW</span>
+          <span class="supp-slot-when">Reset nervous system — fight-or-flight → rest</span>
+          <span class="supp-alarm">⏰ 5:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Yoga Nidra (NSDR) <b>20–30 min</b></span>
+        </div>
+        <div class="supp-note">Non-Sleep Deep Rest completely resets the CNS from the training load. Accelerates muscle healing and hormonal recovery. Critical after heavy barbell sessions.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#7c3aed;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 EVENING BLOCKADE</span>
+          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
+          <span class="supp-alarm">⏰ 7:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
+        </div>
+        <div class="supp-note">Second blockade blunts evening carbohydrate glucose spikes. Empty stomach required.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ DINNER & 14-HOUR FAST</span>
+          <span class="supp-slot-when">Eating window closes — fast begins immediately at 8:00 PM</span>
+          <span class="supp-alarm" style="color:#5a5575;">🕗 8:00 PM</span>
+        </div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow. Water and herbal tea only. Fast is 14 hours.</div>
+      </div>
+
+    </div>
+
+    <!-- Rest Day (Wed, Sat, Sun) Schedule -->
+    <div id="supp-panel-rest" class="hidden">
+      <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
+        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Rest days: same eating window (10 AM–8 PM), same morning wellness routine. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no electrolyte sodium drink, no sauna</b>. Still do Yoga Nidra at 5:30 PM.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#a78bfa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
+          <span class="supp-slot-when">Same as training days</span>
+          <span class="supp-alarm">⏰ 4:45 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower</span>
+        </div>
+        <div class="supp-note">Morning wellness routine does not change on rest days. Circadian anchoring is non-negotiable.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
+          <span class="supp-slot-when">High-fat meal + L-Carnitine moved here on rest days</span>
+          <span class="supp-alarm">⏰ 10:00 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">🥚 Eggs + Avocado <b>high-fat meal</b></span>
+          <span class="supp-pill">Omega-3 Fish Oil <b>1,000–2,000 mg</b></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
+          <span class="supp-pill">Morning Core Vitamins <em>D3+K2, Curcumin+Piperine</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>rest day shift</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield — daily</em></span>
+        </div>
+        <div class="supp-note">L-Carnitine + Garlic move here since there is no pre-workout window. TMAO rule never has a day off. Lp(a) suppression requires daily saturation.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#22d3a0;">
         <div class="supp-slot-header">
           <span class="supp-time-badge" style="background:rgba(34,211,160,0.12);color:#22d3a0;">🍽 LUNCH</span>
-          <span class="supp-slot-when">During meal</span>
+          <span class="supp-slot-when">Plant Sterols during meal</span>
           <span class="supp-alarm">⏰ 1:00 PM</span>
         </div>
         <div class="supp-pills">
@@ -1407,60 +1427,48 @@
       <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.55;">
         <div class="supp-slot-header">
           <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⛔ NO TRAINING TODAY</span>
-          <span class="supp-slot-when">Skip sodium drink — plain water only</span>
+          <span class="supp-slot-when">Skip electrolytes and sauna — active recovery only</span>
           <span class="supp-alarm" style="color:#5a5575;">2:00 PM</span>
         </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">No electrolyte matrix on rest days. Sodium rule only applies during active 60+ min training sessions.</div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Walking, mobility, or light yoga. No structured barbell work. No electrolyte matrix.</div>
       </div>
 
-      <div class="supp-slot" style="--slot-color:#8a5cf6;">
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">💊 EVENING BLOCKADE</span>
-          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
-          <span class="supp-alarm">⏰ 7:00 PM</span>
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 DOWN-REGULATION WINDOW</span>
+          <span class="supp-slot-when">NSDR still runs on rest days</span>
+          <span class="supp-alarm">⏰ 5:30 PM</span>
         </div>
         <div class="supp-pills">
-          <span class="supp-pill">Psyllium Husk (Isabgol) <b>5g in 16oz water</b></span>
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+          <span class="supp-pill">Yoga Nidra (NSDR) <b>20–30 min</b></span>
         </div>
-        <div class="supp-note">Same as training days. Empty stomach required.</div>
+        <div class="supp-note">Nervous system reset is beneficial even without training load. Maintains the daily practice.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#7c3aed;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">🌙 DINNER</span>
-          <span class="supp-slot-when">Final meal — finish by 8:00 PM sharp</span>
+          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 EVENING BLOCKADE</span>
+          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
           <span class="supp-alarm">⏰ 7:30 PM</span>
         </div>
         <div class="supp-pills">
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 2 — during meal</em></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 2</em></span>
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
         </div>
-        <div class="supp-note">Same as training days. Mix with food. Eating window closes at 8:00 PM.</div>
+        <div class="supp-note">Lipid blockade never takes a rest day. Same as training days.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ 14-HOUR FAST BEGINS</span>
-          <span class="supp-slot-when">Zero calories — plain water or herbal tea only</span>
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⏸ DINNER & 14-HOUR FAST</span>
+          <span class="supp-slot-when">Eating window closes — fast begins immediately at 8:00 PM</span>
           <span class="supp-alarm" style="color:#5a5575;">🕗 8:00 PM</span>
         </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.3);color:#a09ab8;">🌑 NIGHT STACK</span>
-          <span class="supp-slot-when">During the fast — empty stomach</span>
-          <span class="supp-alarm">⏰ 10:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
-        </div>
-        <div class="supp-note">Zero calories — does not break the fast. Same as training days.</div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Nothing caloric until 10:00 AM tomorrow. Water and herbal tea only.</div>
       </div>
 
     </div>
+
     <!-- Month 1 Onboarding -->
     <div class="card" style="margin-top:20px;margin-bottom:16px;">
       <div class="label" style="margin-bottom:6px;">📅 Part 3: Month 1 On-Ramp — Gut Adaptation Phase</div>
@@ -2127,75 +2135,82 @@ function switchSuppDay(day) {
 const WORKOUT_PLAN = [
   {
     day: 0, name: 'Monday', label: 'MON',
-    title: 'Heavy Upper Body & Zone 2',
-    goal: 'Upper body tension + mitochondria',
+    title: 'Heavy Lower Body A',
+    goal: 'Maximal leg strength — squat pattern',
     exercises: [
-      { name: 'Barbell Bench Press', sets: 4, reps: '6-8', weight: '70-75 kg', rest: '2.5min', cardio: false },
-      { name: 'Weighted Pull-Ups / Heavy Lat Pulldowns', sets: 3, reps: '6-8', weight: '60-65 kg', rest: '', cardio: false },
-      { name: 'Standing Overhead Barbell Press', sets: 3, reps: '8', weight: '35-40 kg', rest: '', cardio: false },
-      { name: 'Bent-Over Barbell Rows', sets: 3, reps: '8', weight: '55-60 kg', rest: '', cardio: false },
-      { name: 'Aerobic Flush Run', sets: 1, reps: '25 min', weight: '12 km/h Zone 2', rest: '', cardio: true }
+      { name: 'Barbell Back Squats', sets: 4, reps: '5-6', weight: '80-90 kg', rest: '3min', cardio: false },
+      { name: 'Romanian Deadlifts (RDLs)', sets: 3, reps: '8-10', weight: '70-80 kg', rest: '2.5min', cardio: false },
+      { name: 'Bulgarian Split Squats', sets: 3, reps: '8-10/leg', weight: '20-25 kg', rest: '2min', cardio: false },
+      { name: 'Core Stability (Plank / Ab Wheel)', sets: 3, reps: '45-60 sec', weight: 'bodyweight', rest: '1min', cardio: false }
     ]
   },
   {
     day: 1, name: 'Tuesday', label: 'TUE',
-    title: 'Heavy Lower Body & Grip/Core',
-    goal: 'Maximal leg strength + grip endurance',
+    title: 'Heavy Upper Body A',
+    goal: 'Horizontal push + pull strength',
     exercises: [
-      { name: 'Barbell Back Squats', sets: 4, reps: '6-8', weight: '75-85 kg', rest: '3min', cardio: false },
-      { name: 'Romanian Deadlifts (RDLs)', sets: 3, reps: '8-10', weight: '70-80 kg', rest: '', cardio: false },
-      { name: "Farmer's Carry", sets: 4, reps: '40m', weight: '30 kg/hand', rest: '', cardio: false },
-      { name: 'Hanging Leg Raises', sets: 3, reps: '12-15', weight: 'bodyweight', rest: '', cardio: false }
+      { name: 'Barbell Bench Press', sets: 4, reps: '5-6', weight: '75-85 kg', rest: '3min', cardio: false },
+      { name: 'Heavy Barbell Rows', sets: 4, reps: '6-8', weight: '65-75 kg', rest: '2.5min', cardio: false },
+      { name: 'Overhead Dumbbell Press', sets: 3, reps: '8-10', weight: '20-25 kg/hand', rest: '2min', cardio: false },
+      { name: 'Weighted Dips', sets: 3, reps: '8-10', weight: '+10-15 kg', rest: '2min', cardio: false }
     ]
   },
   {
     day: 2, name: 'Wednesday', label: 'WED',
-    title: 'VO2 Max Intervals',
-    goal: 'Raise aerobic ceiling via high-intensity intervals',
+    title: 'Active Rest & Recovery',
+    goal: 'Low-intensity movement, mobility, nervous system reset',
     exercises: [
-      { name: 'Warm-up Run', sets: 1, reps: '5 min', weight: '10 km/h', rest: '', cardio: true },
-      { name: 'Sprint Intervals (×6)', sets: 6, reps: '1 min sprint + 2 min walk', weight: '16.5-17.5 / 5.5 km/h', rest: '', cardio: true },
-      { name: 'Cooldown Run', sets: 1, reps: '7 min', weight: '9 km/h', rest: '', cardio: true }
+      { name: 'Low-Intensity Walking', sets: 1, reps: '30-45 min', weight: 'Zone 1', rest: '', cardio: true },
+      { name: 'Deep Mobility Work', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false },
+      { name: 'Light Restorative Yoga', sets: 1, reps: '20-30 min', weight: 'bodyweight', rest: '', cardio: false }
     ]
   },
   {
     day: 3, name: 'Thursday', label: 'THU',
-    title: 'Full-Body Hypertrophy',
-    goal: 'Volume accumulation for muscle growth',
+    title: 'Heavy Lower Body B',
+    goal: 'Hip hinge strength + loaded carries',
     exercises: [
-      { name: 'Incline Dumbbell Press', sets: 3, reps: '10', weight: '25-27.5 kg', rest: '', cardio: false },
-      { name: 'Bulgarian Split Squats', sets: 3, reps: '8-10/leg', weight: '15-20 kg', rest: '', cardio: false },
-      { name: 'Seated Cable Rows', sets: 3, reps: '10-12', weight: '55 kg', rest: '', cardio: false },
-      { name: 'Dumbbell Lateral Raises', sets: 3, reps: '12-15', weight: '10-12.5 kg', rest: '', cardio: false },
-      { name: 'DB Bicep Curls superset Tricep Rope Pushdowns', sets: 3, reps: '12', weight: '', rest: '', cardio: false }
+      { name: 'Conventional / Sumo Deadlifts', sets: 4, reps: '4-5', weight: '100-120 kg', rest: '3-4min', cardio: false },
+      { name: 'Barbell Hack Squats', sets: 3, reps: '8-10', weight: '60-70 kg', rest: '2.5min', cardio: false },
+      { name: 'Walking Lunges (Barbell)', sets: 3, reps: '10-12/leg', weight: '30-40 kg', rest: '2min', cardio: false },
+      { name: "Loaded Farmer's Carries", sets: 4, reps: '40m', weight: '35-40 kg/hand', rest: '90sec', cardio: false }
     ]
   },
   {
     day: 4, name: 'Friday', label: 'FRI',
-    title: 'Functional Power & Tempo Run',
-    goal: 'Power output + lactate threshold',
+    title: 'Heavy Upper Body B',
+    goal: 'Vertical push + pull strength',
     exercises: [
-      { name: 'Warm-up Run', sets: 1, reps: '3 min', weight: '10 km/h', rest: '', cardio: true },
-      { name: 'Tempo Run', sets: 1, reps: '20 min', weight: '13.5-14.0 km/h', rest: '', cardio: true },
-      { name: 'Kettlebell Swings', sets: 4, reps: '15', weight: '24 kg', rest: '', cardio: false },
-      { name: 'Medicine Ball Slams', sets: 3, reps: '12', weight: '10-15 kg', rest: '', cardio: false },
-      { name: 'Plank', sets: 3, reps: '60 sec', weight: '+10 kg plate', rest: '', cardio: false }
+      { name: 'Barbell Overhead Press', sets: 4, reps: '5-6', weight: '45-55 kg', rest: '3min', cardio: false },
+      { name: 'Weighted Pull-ups / Lat Pulldowns', sets: 4, reps: '6-8', weight: '+10-15 kg / 70-80 kg', rest: '2.5min', cardio: false },
+      { name: 'Incline Dumbbell Press', sets: 3, reps: '10-12', weight: '22-27 kg/hand', rest: '2min', cardio: false },
+      { name: 'Arm Accents (Curls + Tricep)', sets: 3, reps: '12-15', weight: '', rest: '90sec', cardio: false }
     ]
   },
   {
     day: 5, name: 'Saturday', label: 'SAT',
-    title: 'Long Endurance Base',
-    goal: 'Build aerobic base, fat adaptation',
+    title: 'Active Rest & Systemic Recovery',
+    goal: 'Full systemic rest — walking and mobility only',
     exercises: [
-      { name: 'Long Run', sets: 1, reps: '60-75 min', weight: '11.5-12.0 km/h Zone 2', rest: '', cardio: true }
+      { name: 'Light Walking', sets: 1, reps: '30-60 min', weight: 'Zone 1', rest: '', cardio: true },
+      { name: 'Mobility / Stretching', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false }
+    ]
+  },
+  {
+    day: 6, name: 'Sunday', label: 'SUN',
+    title: 'Full Rest & Systemic Recovery',
+    goal: 'Complete rest — no structured training',
+    exercises: [
+      { name: 'Light Walking (optional)', sets: 1, reps: '20-30 min', weight: 'Zone 1', rest: '', cardio: true },
+      { name: 'Yoga / Breathwork (optional)', sets: 1, reps: '20 min', weight: 'bodyweight', rest: '', cardio: false }
     ]
   }
 ];
 
 function getTodayWorkoutDay() {
   const d = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
-  if (d === 0) return null; // Sunday = rest day
-  return d - 1; // Mon=0, Tue=1, ..., Sat=5
+  // Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+  return d === 0 ? 6 : d - 1;
 }
 
 function getOrInitTodayWorkout(dayIndex) {
