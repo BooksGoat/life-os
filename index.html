@@ -1771,6 +1771,13 @@ function switchTab(id) {
   document.querySelectorAll('.rail-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === id));
 
+  // On mobile, highlight "More" button when a secondary tab is active
+  const primaryTabs = ['today','health','recipes','watch'];
+  if (!primaryTabs.includes(id)) {
+    const moreBtn = document.querySelector('.tab-btn[data-tab="more"]');
+    if (moreBtn) moreBtn.classList.add('active');
+  }
+
   if (typeof sectionRenderers !== 'undefined' && sectionRenderers[id]) sectionRenderers[id]();
   window.scrollTo(0, 0);
 }
@@ -1954,7 +1961,6 @@ function showToast(msg) {
 }
 
 sectionRenderers['today'] = renderToday;
-renderToday();
 switchTab('today');
 
 if (window.pdfjsLib) {
