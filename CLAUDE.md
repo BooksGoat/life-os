@@ -83,3 +83,4 @@ No sidebar. Today dashboard = home. Section cards navigate to sections. `navigat
 | 2026-05-31 | TDZ fix: moved startup `sectionRenderers['today']=renderToday; switchTab('today')` from line 1963 to end of script — `typeof` on TDZ `const` throws ReferenceError, crashing script and leaving health/recipes renderers unregistered (black screens). |
 | 2026-05-31 | Added Dessert category to meal type picker (`pickMealType`), recipe tab bar (`MEAL_TABS`), and placeholder emoji map (`MEAL_PLACEHOLDER_EMOJI`). |
 | 2026-05-31 | Replaced `window.prompt()` in `importRecipeFromUrl()` with `showUrlInputModal()` — custom non-blocking overlay. Native prompt blocked page and caused Photo/Add Book buttons to appear broken when prompt was open. |
+| 2026-05-31 | Added Dressings category (🫙) to meal type picker, recipe tabs, and placeholder emoji map. |
