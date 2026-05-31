@@ -958,6 +958,19 @@
     .tpc-chip   { font-size: 11px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; color: var(--text); }
     .tpc-recipe-img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
 
+    /* ── RECIPE CARD v2 ─────────────────────────────────── */
+    .rv-card {
+      border-radius: 14px !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    }
+    .rv-card:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    }
+    .rv-card-img, .rv-card-img-placeholder {
+      border-radius: 10px 10px 0 0 !important;
+    }
+
   </style>
 </head>
 <body>
@@ -4565,7 +4578,7 @@ function renderRecipesHeader() {
   root.innerHTML = `
     <div class="rv-header">
       <div>
-        <div class="rv-title">🍳 Recipe Library</div>
+        <div class="section-title-v2" style="--section-accent:var(--accent-recipes)">🍳 Recipe Library</div>
         <div class="rv-sub">${recipes.length} recipe${recipes.length !== 1 ? 's' : ''} across ${books.length} book${books.length !== 1 ? 's' : ''}</div>
       </div>
       <div class="rv-controls">
