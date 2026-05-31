@@ -1752,14 +1752,29 @@ function defaultState() {
 }
 
 function getState() {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (!raw) return defaultState();
   try {
-    return JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState();
-  } catch { return defaultState(); }
+    return JSON.parse(raw) || defaultState();
+  } catch {
+    // JSON corrupted — back it up, don't wipe silently
+    try { localStorage.setItem(STORE_KEY + '_corrupted_backup', raw); } catch {}
+    console.error('[Life OS] localStorage parse error — backed up to ' + STORE_KEY + '_corrupted_backup');
+    return defaultState();
+  }
 }
 
 function setState(updater) {
   const next = updater(getState());
-  localStorage.setItem(STORE_KEY, JSON.stringify(next));
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(next));
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      alert('⚠️ Storage full — your recipes could not be saved.\n\nGo to Settings → Export Data to back up your data, then delete some recipes to free space.');
+    } else {
+      console.error('[Life OS] setState failed:', e);
+    }
+  }
 }
 
 function today() {
