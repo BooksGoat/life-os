@@ -1172,25 +1172,103 @@
       <!-- HEALTH -->
       <section id="health" class="section">
   <div class="section-title">💪 Health</div>
-  <div style="display:flex;gap:8px;margin-bottom:20px;">
-    <button class="btn btn-primary" id="h-tab-workout" onclick="switchHealthTab('workout')">Workout</button>
-    <button class="btn" id="h-tab-weight" onclick="switchHealthTab('weight')">Weight</button>
-    <button class="btn" id="h-tab-meals" onclick="switchHealthTab('meals')">Meals</button>
-    <button class="btn" id="h-tab-water" onclick="switchHealthTab('water')">Water</button>
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <button class="btn btn-primary" id="h-tab-workout" onclick="switchHealthTab('workout')">💪 Workout</button>
+    <button class="btn" id="h-tab-core" onclick="switchHealthTab('core')">🔥 Core & Abs</button>
+    <button class="btn" id="h-tab-mobility" onclick="switchHealthTab('mobility')">🧘 Mobility</button>
+    <button class="btn" id="h-tab-meals" onclick="switchHealthTab('meals')">🍽 Meals</button>
     <button class="btn" id="h-tab-supplements" onclick="switchHealthTab('supplements')">💊 Supplements</button>
   </div>
   <div id="h-panel-workout">
     <div id="workout-tracker-root"></div>
   </div>
-  <div id="h-panel-weight" class="hidden">
+  <div id="h-panel-core" class="hidden">
     <div class="card" style="margin-bottom:16px;">
-      <div style="display:flex;gap:12px;align-items:end;">
-        <div><label class="label">Weight (kg)</label><input type="number" id="wt-kg" step="0.1" min="30" max="200" placeholder="70.5" style="width:120px;"></div>
-        <div><label class="label">Date</label><input type="date" id="wt-date" style="width:160px;"></div>
-        <button class="btn btn-primary" onclick="logWeight()">Add</button>
+      <div class="label" style="color:#f09030;margin-bottom:4px;">Wednesday — Deep Abdominal Density</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Post-Zone 2 Run · Builds thick fighter core without taxing lower back</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Hanging Leg Raises</div>
+          <div style="font-size:12px;color:var(--purple);">3 sets to failure · 90 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Hang from pull-up bar. Keep legs completely straight, raise to 90°. No swinging — momentum shifts load to hip flexors, not abs.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Ab-Wheel Rollouts</div>
+          <div style="font-size:12px;color:var(--purple);">3 sets × 10-12 reps · 90 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Roll out as far as possible without lower back sagging to the floor. Builds anti-extension strength — the foundation of a truly strong core.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Weighted Planks</div>
+          <div style="font-size:12px;color:var(--purple);">3 sets × 60 sec · 90 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Rest a 10–15 kg plate on mid-back. Squeeze glutes, brace stomach as if about to be punched. Total core stiffness.</div>
+        </div>
       </div>
     </div>
-    <div class="card"><canvas id="weight-chart" height="100"></canvas></div>
+    <div class="card">
+      <div class="label" style="color:#f09030;margin-bottom:4px;">Saturday — Obliques & Functional Stability</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Post-VO2 Max Sprints · Carves obliques + serratus + unbreakable grip</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Heavy Kettlebell Farmer's Carries</div>
+          <div style="font-size:12px;color:var(--purple);">4 sets × 40 meters · 90 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Heaviest kettlebells or dumbbells you can hold. Walk with perfect upright posture. Caps the traps, thickens obliques, builds crushing grip.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Cable Woodchoppers (or Weighted Russian Twists)</div>
+          <div style="font-size:12px;color:var(--purple);">3 sets × 12-15 reps/side · 60 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Rotational power to carve obliques and serratus — the muscles right under your ribs.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Hollow Body Holds</div>
+          <div style="font-size:12px;color:var(--purple);">3 sets × 45-60 sec · 60 sec rest</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Lie on back, press lower back completely flat into floor, hover straight legs and shoulders a few inches off the ground.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="h-panel-mobility" class="hidden">
+    <div class="card" style="margin-bottom:8px;">
+      <div class="label" style="color:#22d3a0;margin-bottom:4px;">🕔 Daily Mobility Matrix — 5:15 AM Window</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">Heavy lifting shortens muscles. This flow restores natural length and pumps synovial fluid into the exact joints damaged by Squats, Deadlifts, and Bench Press.</div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="label" style="color:#60a5fa;margin-bottom:12px;">Spine & Shoulders — Clear the Upper Body</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Cat-Cow Transitions</div>
+          <div style="font-size:12px;color:#22d3a0;">2 minutes continuously</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Move slowly, articulating every single vertebra. Wakes up the CNS and pushes fluid into spinal discs.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Thread the Needle</div>
+          <div style="font-size:12px;color:#22d3a0;">60 sec per side</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Start on all fours, reach one arm under your body, drop shoulder to floor. Unlocks stiff thoracic spine — crucial for safe Overhead Presses.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="label" style="color:#60a5fa;margin-bottom:12px;">Hips & Pelvis — Unlock the Squat</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">World's Greatest Stretch</div>
+          <div style="font-size:12px;color:#22d3a0;">5 slow reps per side</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Step into deep runner's lunge, drop elbow toward instep, then rotate that same arm up toward ceiling. Lunge with Thoracic Rotation.</div>
+        </div>
+        <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">90/90 Hip Rotations</div>
+          <div style="font-size:12px;color:#22d3a0;">2 minutes continuously</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Sit on floor, both knees bent at 90°. Slowly pivot knees side to side like windshield wipers — lubricates the hip capsules.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label" style="color:#60a5fa;margin-bottom:12px;">Ankles & Deep Tissues — The Anchor</div>
+      <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);">
+        <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Yogi Squat (Malasana Hold)</div>
+        <div style="font-size:12px;color:#22d3a0;">2 straight minutes</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Drop into deepest bodyweight squat possible. Heels glued to floor, elbows push knees outward. Restores ankle mobility — prevents knee pain on heavy lower-body days.</div>
+      </div>
+    </div>
   </div>
   <div id="h-panel-meals" class="hidden">
     <div class="card" style="margin-bottom:16px;">
@@ -1204,15 +1282,6 @@
       <button class="btn btn-primary" style="margin-top:12px;" onclick="logMeal()">Log Meal</button>
     </div>
     <div id="meal-history"></div>
-  </div>
-  <div id="h-panel-water" class="hidden">
-    <div class="card" style="text-align:center;padding:40px;">
-      <div id="water-display" class="big-num" style="font-size:56px;margin-bottom:8px;">0</div>
-      <div style="color:var(--muted);margin-bottom:24px;">glasses today (goal: 8)</div>
-      <div id="water-glasses" style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;flex-wrap:wrap;"></div>
-      <button class="btn btn-primary" style="font-size:18px;padding:14px 32px;" onclick="addWater()">+ Add Glass 💧</button>
-      <button class="btn" style="margin-left:12px;" onclick="resetWater()">Reset</button>
-    </div>
   </div>
   <div id="h-panel-supplements" class="hidden">
 
@@ -2137,14 +2206,12 @@ sectionRenderers['watch'] = () => { switchWatchTab(currentWatchTab); };
 let weightChart = null;
 
 function switchHealthTab(tab) {
-  ['workout','weight','meals','water','supplements'].forEach(t => {
+  ['workout','core','mobility','meals','supplements'].forEach(t => {
     document.getElementById(`h-panel-${t}`).classList.toggle('hidden', t!==tab);
     document.getElementById(`h-tab-${t}`).className = 'btn' + (t===tab?' btn-primary':'');
   });
-  if (tab==='weight') renderWeightChart();
   if (tab==='workout') renderWorkoutPlan();
   if (tab==='meals') renderMealHistory();
-  if (tab==='water') renderWater();
 }
 
 function switchSuppDay(day) {
