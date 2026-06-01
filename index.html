@@ -2219,6 +2219,12 @@ function switchHealthTab(tab) {
   });
   if (tab==='workout') renderWorkoutPlan();
   if (tab==='meals') renderMealHistory();
+  if (tab==='supplements') {
+    // Auto-select Training or Cardio/Rest based on today
+    const dow = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
+    const isTraining = [1,2,4,5].includes(dow); // Mon,Tue,Thu,Fri
+    switchSuppDay(isTraining ? 'training' : 'rest');
+  }
 }
 
 function switchSuppDay(day) {
