@@ -2413,17 +2413,26 @@ function getOrInitTodayWorkout(dayIndex) {
   const tw = s.health?.todayWorkout;
   if (tw && tw.date === todayStr && tw.dayIndex === dayIndex) return tw;
   // Init fresh for this day/date
-  const plan = WORKOUT_PLAN[dayIndex];
   const fresh = {
     date: todayStr,
     dayIndex,
-    exercises: plan.exercises.map(ex => ({ name: ex.name, sets: [] }))
+    exercises: getWorkoutPlan(dayIndex).map(ex => ({ name: ex.name, sets: [] }))
   };
   setState(st => { st.health.todayWorkout = fresh; return st; });
   return fresh;
 }
 
 let _workoutActiveDay = null;
+
+function getWorkoutPlan(dayIndex) {
+  const s = getState();
+  if (s.workoutPlan && s.workoutPlan[dayIndex]) return s.workoutPlan[dayIndex];
+  return JSON.parse(JSON.stringify(WORKOUT_PLAN[dayIndex].exercises));
+}
+
+function saveWorkoutPlan(dayIndex, exercises) {
+  setState(s => ({...s, workoutPlan: {...(s.workoutPlan||{}), [dayIndex]: exercises}}));
+}
 
 function renderWorkoutPlan() {
   const root = document.getElementById('workout-tracker-root');
@@ -2442,13 +2451,13 @@ function renderWorkoutPlan() {
   }).join('');
 
   const plan = WORKOUT_PLAN[activeDay];
+  const planExercises = getWorkoutPlan(activeDay);
   const tw = getOrInitTodayWorkout(activeDay);
 
   // Exercise rows
-  const exHtml = plan.exercises.map((ex, ei) => {
+  const exHtml = planExercises.map((ex, ei) => {
     const twEx = tw.exercises[ei] || { name: ex.name, sets: [] };
     const isCardio = ex.cardio;
-    const accentColor = isCardio ? 'var(--green)' : 'var(--purple)';
     const badge = isCardio ? `<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(34,211,160,0.15);color:var(--green);font-weight:700;margin-left:8px;">CARDIO</span>` : '';
     const planLabel = `${ex.sets}×${ex.reps}${ex.rest ? ' · rest ' + ex.rest : ''}`;
     const noteHtml = ex.note ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;font-style:italic;">${esc(ex.note)}</div>` : '';
@@ -2465,16 +2474,20 @@ function renderWorkoutPlan() {
       </span>`;
     }).join('');
 
-    // Add set inline form (always shown, collapsed to a button)
     const addSetBtn = `<button onclick="addWorkoutSet(${activeDay},${ei})" style="padding:4px 12px;border-radius:20px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;">+ Add Set</button>`;
 
-    return `<div style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;">
+    return `<div id="wt-exercise-${activeDay}-${ei}" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
-        <div>
+        <div style="flex:1;">
           <span style="font-size:14px;font-weight:600;color:var(--text);">${esc(ex.name)}</span>${badge}
           <div style="font-size:12px;color:var(--muted);margin-top:2px;">${esc(planLabel)}</div>${noteHtml}
         </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button onclick="editWorkoutExerciseUI(${activeDay},${ei})" style="border:1px solid rgba(138,92,246,0.3);background:rgba(138,92,246,0.1);color:var(--purple);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:6px;">✏</button>
+          <button onclick="deleteWorkoutExercise(${activeDay},${ei})" style="border:1px solid rgba(244,114,182,0.3);background:rgba(244,114,182,0.08);color:#f472b6;cursor:pointer;font-size:11px;padding:3px 8px;border-radius:6px;">✕</button>
+        </div>
       </div>
+      <div id="wt-edit-${activeDay}-${ei}"></div>
       <div id="wt-sets-${activeDay}-${ei}" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${setChips}</div>
       <div id="wt-addinput-${activeDay}-${ei}"></div>
       ${addSetBtn}
@@ -2501,7 +2514,11 @@ function renderWorkoutPlan() {
       <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(plan.name)} — ${esc(plan.title)}</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">Goal: ${esc(plan.goal)}</div>
       ${exHtml}
-      <button onclick="markDayComplete(${activeDay})" style="margin-top:10px;padding:12px 28px;border-radius:10px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">Mark Day Complete</button>
+      <div id="wt-add-exercise-${activeDay}"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="addWorkoutExerciseUI(${activeDay})" style="padding:10px 20px;border-radius:10px;border:1px dashed rgba(138,92,246,0.4);background:rgba(138,92,246,0.06);color:var(--purple);font-size:13px;font-weight:600;cursor:pointer;">+ Add Exercise</button>
+        <button onclick="markDayComplete(${activeDay})" style="padding:10px 28px;border-radius:10px;border:none;background:var(--purple);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.03em;">Mark Day Complete</button>
+      </div>
     </div>
     ${logsHtml}`;
 }
@@ -2530,8 +2547,7 @@ function commitWorkoutSet(dayIndex, exIndex) {
   const todayStr = today();
   setState(st => {
     if (!st.health.todayWorkout || st.health.todayWorkout.date !== todayStr || st.health.todayWorkout.dayIndex !== dayIndex) {
-      const plan = WORKOUT_PLAN[dayIndex];
-      st.health.todayWorkout = { date: todayStr, dayIndex, exercises: plan.exercises.map(ex=>({name:ex.name,sets:[]})) };
+      st.health.todayWorkout = { date: todayStr, dayIndex, exercises: getWorkoutPlan(dayIndex).map(ex=>({name:ex.name,sets:[]})) };
     }
     const ex = st.health.todayWorkout.exercises[exIndex];
     if (!ex) return st;
@@ -2578,6 +2594,87 @@ function markDayComplete(dayIndex) {
     return st;
   });
   showToast(`${plan.name} workout logged ✓`);
+  renderWorkoutPlan();
+}
+
+function editWorkoutExerciseUI(dayIndex, ei) {
+  const container = document.getElementById(`wt-edit-${dayIndex}-${ei}`);
+  if (!container) return;
+  if (container.querySelector('input')) { container.innerHTML = ''; return; }
+  const exercises = getWorkoutPlan(dayIndex);
+  const ex = exercises[ei];
+  if (!ex) return;
+  container.innerHTML = `<div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
+    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">Edit Exercise</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input id="wt-edit-name-${dayIndex}-${ei}" type="text" value="${esc(ex.name)}" placeholder="Exercise name" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="wt-edit-sets-${dayIndex}-${ei}" type="number" value="${ex.sets||''}" placeholder="Sets" min="1" style="width:70px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+        <input id="wt-edit-reps-${dayIndex}-${ei}" type="text" value="${esc(ex.reps||'')}" placeholder="Reps" style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+        <input id="wt-edit-rest-${dayIndex}-${ei}" type="text" value="${esc(ex.rest||'')}" placeholder="Rest (e.g. 90s)" style="width:110px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      </div>
+      <input id="wt-edit-note-${dayIndex}-${ei}" type="text" value="${esc(ex.note||'')}" placeholder="Coaching note (optional)" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="saveWorkoutExerciseEdit(${dayIndex},${ei})" style="padding:6px 16px;border-radius:6px;border:none;background:var(--purple);color:#fff;font-size:13px;cursor:pointer;">Save</button>
+        <button onclick="document.getElementById('wt-edit-${dayIndex}-${ei}').innerHTML=''" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function saveWorkoutExerciseEdit(dayIndex, ei) {
+  const name = document.getElementById(`wt-edit-name-${dayIndex}-${ei}`)?.value.trim();
+  if (!name) return;
+  const sets = document.getElementById(`wt-edit-sets-${dayIndex}-${ei}`)?.value.trim();
+  const reps = document.getElementById(`wt-edit-reps-${dayIndex}-${ei}`)?.value.trim();
+  const rest = document.getElementById(`wt-edit-rest-${dayIndex}-${ei}`)?.value.trim();
+  const note = document.getElementById(`wt-edit-note-${dayIndex}-${ei}`)?.value.trim();
+  const exercises = getWorkoutPlan(dayIndex);
+  exercises[ei] = { ...exercises[ei], name, sets: sets||exercises[ei].sets, reps: reps||exercises[ei].reps, rest, note };
+  saveWorkoutPlan(dayIndex, exercises);
+  renderWorkoutPlan();
+}
+
+function deleteWorkoutExercise(dayIndex, ei) {
+  if (!confirm('Delete this exercise from the plan?')) return;
+  const exercises = getWorkoutPlan(dayIndex);
+  exercises.splice(ei, 1);
+  saveWorkoutPlan(dayIndex, exercises);
+  renderWorkoutPlan();
+}
+
+function addWorkoutExerciseUI(dayIndex) {
+  const container = document.getElementById(`wt-add-exercise-${dayIndex}`);
+  if (!container) return;
+  if (container.querySelector('input')) { container.innerHTML = ''; return; }
+  container.innerHTML = `<div style="background:var(--s3);border:1px solid rgba(138,92,246,0.25);border-radius:8px;padding:12px;margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:600;color:var(--purple);margin-bottom:8px;">New Exercise</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input id="wt-new-name-${dayIndex}" type="text" placeholder="Exercise name" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="wt-new-sets-${dayIndex}" type="number" placeholder="Sets" min="1" style="width:70px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+        <input id="wt-new-reps-${dayIndex}" type="text" placeholder="Reps" style="width:90px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+        <input id="wt-new-rest-${dayIndex}" type="text" placeholder="Rest (e.g. 90s)" style="width:110px;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      </div>
+      <input id="wt-new-note-${dayIndex}" type="text" placeholder="Coaching note (optional)" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:13px;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="confirmAddWorkoutExercise(${dayIndex})" style="padding:6px 16px;border-radius:6px;border:none;background:var(--purple);color:#fff;font-size:13px;cursor:pointer;">Add</button>
+        <button onclick="document.getElementById('wt-add-exercise-${dayIndex}').innerHTML=''" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function confirmAddWorkoutExercise(dayIndex) {
+  const name = document.getElementById(`wt-new-name-${dayIndex}`)?.value.trim();
+  if (!name) return;
+  const sets = document.getElementById(`wt-new-sets-${dayIndex}`)?.value.trim() || '3';
+  const reps = document.getElementById(`wt-new-reps-${dayIndex}`)?.value.trim() || '10';
+  const rest = document.getElementById(`wt-new-rest-${dayIndex}`)?.value.trim() || '';
+  const note = document.getElementById(`wt-new-note-${dayIndex}`)?.value.trim() || '';
+  const exercises = getWorkoutPlan(dayIndex);
+  exercises.push({ name, sets, reps, rest, note, cardio: false });
+  saveWorkoutPlan(dayIndex, exercises);
   renderWorkoutPlan();
 }
 
