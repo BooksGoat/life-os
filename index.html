@@ -3988,12 +3988,23 @@ async function callClaude(messages, maxTokens = 1024) {
       body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages })
     });
     if (!resp.ok) {
-      if (resp.status === 401) { localStorage.removeItem('lifeos_claude_key'); alert('API key invalid — cleared. Try again.'); }
+      const errBody = await resp.json().catch(() => ({}));
+      const errMsg = errBody?.error?.message || `HTTP ${resp.status}`;
+      if (resp.status === 401) {
+        localStorage.removeItem('lifeos_claude_key');
+        alert('API key invalid — cleared. Try again.\n\n' + errMsg);
+      } else {
+        alert(`Claude API error (${resp.status}): ${errMsg}`);
+      }
       return null;
     }
     const data = await resp.json();
     return data.content[0].text;
-  } catch(e) { console.error('Claude API error:', e); return null; }
+  } catch(e) {
+    console.error('Claude API error:', e);
+    alert('Claude request failed: ' + e.message + '\n\nThis may be a network or CORS issue.');
+    return null;
+  }
 }
 
 function parseClaudeRecipeJson(text) {
@@ -4027,13 +4038,11 @@ function importRecipeFromScreenshot() {
         if (!photoDataUrl) { restoreScreen(); alert('Could not read image.'); return; }
 
         showParseProgress('Asking Claude to extract recipe…', 0.3);
-        // send original file bytes (not compressed) for better OCR
-        const origBuf = await file.arrayBuffer();
-        const origBase64 = await new Promise(res => {
-          const fr = new FileReader(); fr.onload = e => res(e.target.result.split(',')[1]); fr.onerror = () => res(null);
-          fr.readAsDataURL(new Blob([origBuf]));
-        });
-        const mediaType = file.type === 'image/png' ? 'image/png' : file.type === 'image/webp' ? 'image/webp' : 'image/jpeg';
+        // Compress to max 1500px for API (large images cause 400 errors)
+        const apiImageDataUrl = await compressImageToDataUrl(await file.arrayBuffer(), 1500);
+        const origBase64 = apiImageDataUrl ? apiImageDataUrl.split(',')[1] : null;
+        if (!origBase64) { restoreScreen(); alert('Could not process image for Claude.'); return; }
+        const mediaType = 'image/jpeg';
         const text = await callClaude([{
           role: 'user',
           content: [
