@@ -1308,7 +1308,7 @@
     <!-- Day Toggle -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
       <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon, Tue, Thu, Fri)</button>
-      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🌿 Rest Day (Wed, Sat, Sun)</button>
+      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🏃 Cardio/Rest Day (Wed, Sat, Sun)</button>
     </div>
 
     <!-- Training Day Schedule -->
@@ -1454,7 +1454,7 @@
     <!-- Rest Day (Wed, Sat, Sun) Schedule -->
     <div id="supp-panel-rest" class="hidden">
       <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
-        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Rest days: same eating window (10 AM–8 PM), same morning wellness routine. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no electrolyte sodium drink, no sauna</b>. Still do Yoga Nidra at 5:30 PM.</div>
+        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Cardio/recovery days (Wed=aerobic run+core, Sat=VO2 sprints+core, Sun=full rest): same eating window (10 AM–8 PM), same morning wellness routine. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no electrolyte sodium drink, no sauna</b>. Still do Yoga Nidra at 5:30 PM.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#a78bfa;">
@@ -2259,8 +2259,9 @@ const WORKOUT_PLAN = [
     exercises: [
       { name: 'Threshold Run @ 13.5 km/h', sets: 1, reps: '20 min continuous', rest: '', note: 'Sustained threshold — do not drop pace', cardio: true },
       { name: 'Zone 2 Flush @ 12.0 km/h', sets: 1, reps: '25 min continuous', rest: '', note: 'Immediately after threshold run — maximize fat oxidation', cardio: true },
-      { name: 'Hanging Leg Raises', sets: 3, reps: 'to failure', rest: '90sec', note: 'Legs straight — lower abdominal density', cardio: false },
-      { name: 'Weighted Planks', sets: 3, reps: '60 sec', rest: '90sec', note: 'Weight plate on back — total core stiffness', cardio: false }
+      { name: 'Hanging Leg Raises', sets: 3, reps: 'to failure', rest: '90sec', note: 'Hang from bar, legs straight to 90°. No swing — momentum = hip flexors, not abs', cardio: false },
+      { name: 'Ab-Wheel Rollouts', sets: 3, reps: '10-12', rest: '90sec', note: 'Roll out as far as possible without lower back sagging. Anti-extension strength', cardio: false },
+      { name: 'Weighted Planks', sets: 3, reps: '60 sec', rest: '90sec', note: '10–15 kg plate on mid-back. Squeeze glutes, brace stomach as if about to be punched', cardio: false }
     ]
   },
   {
@@ -2292,7 +2293,9 @@ const WORKOUT_PLAN = [
       { name: 'Warm-Up Jog', sets: 1, reps: '5-10 min', rest: '', note: 'Light jog — prep Achilles and hamstrings', cardio: true },
       { name: 'All-Out Sprints @ 16.5–17.5 km/h', sets: 6, reps: '1 min each', rest: '1–1.5 min walk between', note: 'Maximum effort every round — full heart-rate drop before next', cardio: true },
       { name: 'Cool Down Walk', sets: 1, reps: '10 min', rest: '', note: 'Flush lactic acid', cardio: true },
-      { name: "Heavy Kettlebell Farmer's Carries", sets: 4, reps: '40 meters', rest: '90sec', note: 'Heaviest kettlebells you can hold — caps traps, unbreakable core', cardio: false }
+      { name: "Heavy Kettlebell Farmer's Carries", sets: 4, reps: '40 meters', rest: '90sec', note: 'Heaviest kettlebells you can hold. Perfect upright posture. Caps traps, thickens obliques, crushing grip', cardio: false },
+      { name: 'Cable Woodchoppers (or Weighted Russian Twists)', sets: 3, reps: '12-15/side', rest: '60sec', note: 'Pure rotational power — carves obliques and serratus (muscles under ribs)', cardio: false },
+      { name: 'Hollow Body Holds', sets: 3, reps: '45-60 sec', rest: '60sec', note: 'Lower back flat into floor, hover straight legs and shoulders a few inches off ground', cardio: false }
     ]
   },
   {
