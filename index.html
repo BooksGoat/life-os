@@ -1769,6 +1769,11 @@
         <input type="text" id="s-tmdb-key" placeholder="your_tmdb_api_key">
         <div style="font-size:11px;color:var(--muted);margin-top:4px;">Free at themoviedb.org → Settings → API</div>
       </div>
+      <div>
+        <label class="label">Claude Proxy URL (required for 📸 Photo import)</label>
+        <input type="text" id="s-claude-proxy" placeholder="https://your-worker.your-subdomain.workers.dev">
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">Deploy <code>claude-proxy-worker.js</code> to Cloudflare Workers — fixes CORS for Claude API calls from the browser.</div>
+      </div>
     </div>
     <button class="btn btn-primary" style="margin-top:16px;" onclick="saveSettings()">Save Settings</button>
   </div>
@@ -1817,7 +1822,7 @@ function defaultState() {
     ideas: [],
     habits: {},
     streak: 0,
-    settings: { googleClientId: '', tmdbKey: '' }
+    settings: { googleClientId: '', tmdbKey: '', claudeProxyUrl: '' }
   };
 }
 
@@ -3005,17 +3010,21 @@ function renderSettings(){
   const s=getState().settings;
   const gid=document.getElementById('s-google-id');
   const tmdb=document.getElementById('s-tmdb-key');
+  const proxy=document.getElementById('s-claude-proxy');
   if(gid) gid.value=s.googleClientId||'';
   if(tmdb) tmdb.value=s.tmdbKey||'';
+  if(proxy) proxy.value=s.claudeProxyUrl||'';
 }
 
 function saveSettings(){
   const gid=document.getElementById('s-google-id');
   const tmdb=document.getElementById('s-tmdb-key');
+  const proxy=document.getElementById('s-claude-proxy');
   if(!gid||!tmdb) return;
   setState(s=>{
     s.settings.googleClientId=gid.value.trim();
     s.settings.tmdbKey=tmdb.value.trim();
+    s.settings.claudeProxyUrl=proxy?proxy.value.trim():'';
     return s;
   });
   showToast('Settings saved ✓');
@@ -3976,13 +3985,17 @@ async function ensureClaudeApiKey() {
 async function callClaude(messages, maxTokens = 1024) {
   const key = await ensureClaudeApiKey();
   if (!key) return null;
+  // Use proxy worker URL if set (required for CORS), else try direct
+  const proxyUrl = getState().settings.claudeProxyUrl || '';
+  const endpoint = proxyUrl
+    ? proxyUrl.replace(/\/$/, '') + '/v1/messages'
+    : 'https://api.anthropic.com/v1/messages';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'x-api-key': key,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-calls': 'true',
         'content-type': 'application/json'
       },
       body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages })
