@@ -780,6 +780,7 @@
     .spe-input { background:var(--s1); border:1px solid var(--purple); border-radius:6px; color:var(--text); padding:3px 8px; font-size:12px; min-width:140px; outline:none; }
     .spe-add-btn { background:transparent; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-size:11px; padding:3px 10px; cursor:pointer; margin-top:2px; }
     .spe-add-btn:hover { border-color:var(--purple); color:var(--purple); }
+    .supp-phase-header { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:16px 0 6px; border-top:1px solid var(--border); margin-top:6px; }
     .supp-rules-card { border:1px solid rgba(244,114,182,0.25) !important; background:rgba(244,114,182,0.04) !important; }
     #mealtype-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center; }
     .mealtype-picker-box { background:#111120;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px 24px;max-width:340px;width:90%;text-align:center; }
@@ -1319,14 +1320,12 @@
 
     <!-- Day Toggle -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-      <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon, Tue, Thu, Fri)</button>
-      <button class="btn" id="supp-day-cardio" onclick="switchSuppDay('cardio')">🏃 Cardio Day (Wed, Sat)</button>
-      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">😴 Full Rest (Sun)</button>
+      <button class="btn btn-primary" id="supp-day-weekday" onclick="switchSuppDay('weekday')">📅 Mon–Sat Protocol</button>
+      <button class="btn" id="supp-day-sunday" onclick="switchSuppDay('sunday')">😴 Sunday Reset</button>
     </div>
 
-    <div id="supp-panel-training"></div>
-    <div id="supp-panel-cardio" class="hidden"></div>
-    <div id="supp-panel-rest" class="hidden"></div>
+    <div id="supp-panel-weekday"></div>
+    <div id="supp-panel-sunday" class="hidden"></div>
 
 
     <!-- Month 1 Onboarding -->
@@ -2003,13 +2002,13 @@ function switchHealthTab(tab) {
   if (tab==='meals') renderMealHistory();
   if (tab==='supplements') {
     const dow = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
-    const mode = [1,2,4,5].includes(dow) ? 'training' : [3,6].includes(dow) ? 'cardio' : 'rest';
+    const mode = dow === 0 ? 'sunday' : 'weekday';
     switchSuppDay(mode);
   }
 }
 
 function switchSuppDay(day) {
-  ['training','cardio','rest'].forEach(d => {
+  ['weekday','sunday'].forEach(d => {
     document.getElementById('supp-panel-'+d).classList.toggle('hidden', d!==day);
     document.getElementById('supp-day-'+d).className = 'btn' + (d===day?' btn-primary':'');
   });
@@ -2018,9 +2017,173 @@ function switchSuppDay(day) {
 
 // ── SUPPLEMENT DATA & RENDER ──────────────────────────────
 const SUPP_DEFAULT = {
-  training: [
-    { id:'tr-s0', slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
-      label:'🌄 MORNING WELLNESS', when:'Hydrotherapy & circadian anchoring', alarm:'⏰ 4:45 AM',
+  weekday: [
+    { id:'wd-s0', phaseHeader:'Phase 1 — The Morning Prime (Fasted)',
+      slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
+      label:'💧 WAKE & HYDRATE', when:'Circadian anchoring — fasted', alarm:'⏰ 05:15 AM',
+      note:'Lemon water + salt rehydrates cells and gently stimulates the digestive system. Direct sunlight halts melatonin and sets the 24-hour clock.',
+      pills:[
+        {id:'wd-s0-p0', text:'🍋 Lemon Water — 1 glass with generous pinch of high-quality salt'},
+        {id:'wd-s0-p1', text:'☀️ Outdoor Sunlight — 10–15 min direct on face, circadian reset'},
+      ]},
+    { id:'wd-s1', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🧘 MOBILITY & YOGA — Hatha Matrix', when:'Spine / Hips / Deep tissue', alarm:'⏰ 05:30 AM',
+      note:'Move through each position slowly. The Malasana hold is non-negotiable — it restores the deep hip mobility erased by sitting.',
+      pills:[
+        {id:'wd-s1-p0', text:'Cat-Cow Transitions — 2 mins'},
+        {id:'wd-s1-p1', text:'Thread the Needle — 60s per side'},
+        {id:'wd-s1-p2', text:"World's Greatest Stretch — 5 slow reps/side"},
+        {id:'wd-s1-p3', text:'90/90 Hip Rotations — 2 mins'},
+        {id:'wd-s1-p4', text:'Yogi Squat / Malasana Hold — 2 mins continuous deep hold'},
+      ]},
+    { id:'wd-s2', slotColor:'#60a5fa', badgeBg:'rgba(96,165,250,0.15)', badgeColor:'#60a5fa',
+      label:'🧊 SYSTEM SHOCK — Cold Shower', when:'Dopamine spike + vascular training', alarm:'⏰ 05:45 AM',
+      note:'2–3 min pure cold. Spikes dopamine, forces vascular constriction (trains blood vessels), accelerates fasted fat oxidation.',
+      pills:[
+        {id:'wd-s2-p0', text:'🧊 Cold Shower — 2–3 minutes pure cold water'},
+      ]},
+    { id:'wd-s3', phaseHeader:'Phase 2 — The Midday Metabolic Trap',
+      slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌅 MEAL 1 — Fast-Breaker', when:'High-protein zero-cholesterol vegan + full stack', alarm:'⏰ 10:00 AM',
+      note:'All fat-soluble supplements (D3, Algae Oil, Curcumin) need dietary fat — avocado and walnuts are the lipid vehicle. Garlic Dose 1 starts the daily TMAO shield.',
+      pills:[
+        {id:'wd-s3-p0', text:'🥑 Tofu / Tempeh + Avocado + Walnuts — high-protein zero-cholesterol vegan meal'},
+        {id:'wd-s3-p1', text:'Berberine — 500 mg'},
+        {id:'wd-s3-p2', text:'Plant Sterols — 1g'},
+        {id:'wd-s3-p3', text:'Algae Oil (Vegan DHA/EPA)'},
+        {id:'wd-s3-p4', text:'Vitamin D3 + K2'},
+        {id:'wd-s3-p5', text:'Curcumin + Amla Extract'},
+        {id:'wd-s3-p6', text:'Odorless Garlic — Dose 1'},
+      ]},
+    { id:'wd-s4', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'⚡ PRE-WORKOUT SHIELD', when:'L-Carnitine + Garlic — must be taken together', alarm:'⏰ 12:00 PM',
+      note:'CRITICAL: Always L-Carnitine and Garlic together. Garlic alters gut biome to prevent TMAO conversion. Loads carnitine into bloodstream 2 hrs before training.',
+      pills:[
+        {id:'wd-s4-p0', text:'L-Carnitine — Dose 1'},
+        {id:'wd-s4-p1', text:'Odorless Garlic — Dose 2 (take together, TMAO shield)'},
+      ]},
+    { id:'wd-s5', slotColor:'#60a5fa', badgeBg:'rgba(96,165,250,0.15)', badgeColor:'#60a5fa',
+      label:'💊 THE BLOCKADE', when:'Empty stomach — 30 min before training', alarm:'⏰ 01:30 PM',
+      note:'Citrus Bergamot inhibits HMG-CoA reductase (same mechanism as statins, without the side effects). Psyllium with 1/4 tsp salt — prevents electrolyte dilution from the 16oz water.',
+      pills:[
+        {id:'wd-s5-p0', text:'Citrus Bergamot — 500 mg'},
+        {id:'wd-s5-p1', text:'Psyllium Husk — 5g in 16oz water with 1/4 tsp salt'},
+      ]},
+    { id:'wd-s6', phaseHeader:'Phase 3 — The Engine & Recovery',
+      slotColor:'#f472b6', badgeBg:'rgba(244,114,182,0.15)', badgeColor:'#f472b6',
+      label:'🏋 THE 4+2 TRAINING SPLIT', when:'Sip LMNT throughout entire session', alarm:'⏰ 02:00 PM',
+      note:'Never plain water alone during 60+ min sessions. Mon/Thu = Lower. Tue/Fri = Upper. Wed = 45-min Cardio + Core A. Sat = VO2 Max Sprints + Core B.',
+      pills:[
+        {id:'wd-s6-p0', text:'⚡ LMNT Electrolyte Packet — sip in water throughout entire session'},
+        {id:'wd-s6-p1', text:'Mon — Heavy Lower A: Squats, RDLs, Bulgarian Split Squats, Calf Raises'},
+        {id:'wd-s6-p2', text:'Tue — Heavy Upper A: Bench Press, Barbell Rows, OHP, Weighted Dips'},
+        {id:'wd-s6-p3', text:'Wed — 45-Min Cardio: 20 min @ 13.5 km/h → 25 min @ 12.0 km/h + Core A'},
+        {id:'wd-s6-p4', text:'Thu — Heavy Lower B: Deadlifts, Hack Squats, Walking Lunges'},
+        {id:'wd-s6-p5', text:'Fri — Heavy Upper B: Weighted Pull-ups, Incline DB Press, Arms'},
+        {id:'wd-s6-p6', text:'Sat — VO2 Max Sprints: 6×1-min all-out @ max speed, 1–1.5 min rest + Core B'},
+      ]},
+    { id:'wd-s7', slotColor:'#8a5cf6', badgeBg:'rgba(138,92,246,0.15)', badgeColor:'#8a5cf6',
+      label:'💪 AFTERNOON TISSUE SATURATION', when:'L-Carnitine Dose 2 + Garlic — always together', alarm:'⏰ 04:00 PM',
+      note:'CRITICAL: L-Carnitine Dose 2 always paired with Garlic Dose 3. Post-workout insulin spike drives carnitine directly into muscle cells.',
+      pills:[
+        {id:'wd-s7-p0', text:'L-Carnitine — Dose 2'},
+        {id:'wd-s7-p1', text:'Odorless Garlic — Dose 3 (take together, TMAO shield for Dose 2)'},
+      ]},
+    { id:'wd-s8', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🚶 ACTIVE RECOVERY WALK', when:'Zone 1/2 clearing + lymphatic drainage', alarm:'⏰ 05:00 PM',
+      note:'30–45 min brisk outdoor walk. Fading afternoon light preps brain for evening melatonin production. Lymphatic system has no pump — walking IS the pump.',
+      pills:[
+        {id:'wd-s8-p0', text:'🚶 Brisk outdoor walk — 30–45 minutes'},
+      ]},
+    { id:'wd-s9', phaseHeader:'Phase 4 — The Evening Down-Regulation',
+      slotColor:'#7c3aed', badgeBg:'rgba(124,58,237,0.15)', badgeColor:'#a78bfa',
+      label:'💊 EVENING BLOCKADE', when:'Empty stomach — 30 min before dinner', alarm:'⏰ 07:30 PM',
+      note:'Second Berberine + Bergamot blockade blunts the evening glucose spike. Empty stomach required — do not eat until 30 min have passed.',
+      pills:[
+        {id:'wd-s9-p0', text:'Berberine — 500 mg'},
+        {id:'wd-s9-p1', text:'Citrus Bergamot — 500 mg'},
+        {id:'wd-s9-p2', text:'Psyllium Husk — 5g in 16oz water with 1/4 tsp salt'},
+      ]},
+    { id:'wd-s10', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌙 MEAL 2 — Dinner & System Shutdown', when:'Eating window closes — 14-hour fast begins', alarm:'⏰ 08:00 PM',
+      note:'Include an apple — pectin naturally blunts the Niacin flush. Start Nicotinic Acid at a micro-dose (pinch from opened capsule) for first 4 days, scale up slowly. Stand up slowly after dinner — Arjun Chaal drops blood pressure.',
+      pills:[
+        {id:'wd-s10-p0', text:'🍽 Final vegan meal — include an apple (pectin blunts Niacin flush)'},
+        {id:'wd-s10-p1', text:'Plant Sterols — 1g'},
+        {id:'wd-s10-p2', text:'Nicotinic Acid — micro-dose (open capsule, start with a pinch, scale up slowly over 4 days)'},
+        {id:'wd-s10-p3', text:'Ashwagandha'},
+        {id:'wd-s10-p4', text:'🍵 Arjun Chaal Decoction — boil 1 tsp powder in 2 cups water down to 1 cup, strain, drink warm'},
+      ]},
+    { id:'wd-s11', slotColor:'#5a5575', badgeBg:'rgba(90,85,117,0.2)', badgeColor:'#a78bfa',
+      label:'🌑 NEUROLOGICAL RESET & SLEEP', when:'Flatten the nervous system — lights out', alarm:'⏰ 09:00 PM',
+      note:'Room completely black and cooled to 60–67°F (15–19°C). NSDR or Vipassana — focus purely on breath. This is the recovery the training depends on.',
+      pills:[
+        {id:'wd-s11-p0', text:'🧘 NSDR or Vipassana Meditation — 15–20 mins'},
+        {id:'wd-s11-p1', text:'🍋 Final Lemon Water — 1 glass with pinch of salt'},
+        {id:'wd-s11-p2', text:'🌑 Lights Out — room completely black, cooled to 60–67°F (15–19°C)'},
+      ]},
+  ],
+  sunday: [
+    { id:'su-s0', slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
+      label:'🌄 MORNING (WAKE NATURALLY)', when:'No alarm — full CNS reset day', alarm:'',
+      note:'Identical morning wellness protocol — circadian anchoring never takes a day off.',
+      pills:[
+        {id:'su-s0-p0', text:'☀️ Outdoor Sunlight — 10–15 min direct exposure'},
+        {id:'su-s0-p1', text:'🧊 Cold Shower — 2–3 min pure cold'},
+        {id:'su-s0-p2', text:'🧘 Full Yoga Matrix — Cat-Cow, Thread-Needle, World Greatest Stretch, 90/90, Malasana'},
+        {id:'su-s0-p3', text:'🍋 Lemon Water with pinch of salt'},
+      ]},
+    { id:'su-s1', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌅 BRUNCH', when:'Full condensed stack — no pre-workout timing needed', alarm:'⏰ 10:00 AM',
+      note:'Full supplement stack at brunch since there is no workout window. TMAO rule never takes a day off.',
+      pills:[
+        {id:'su-s1-p0', text:'🥗 Vegan meal'},
+        {id:'su-s1-p1', text:'Berberine — 500 mg'},
+        {id:'su-s1-p2', text:'Citrus Bergamot — 500 mg'},
+        {id:'su-s1-p3', text:'Plant Sterols — 1g'},
+        {id:'su-s1-p4', text:'Algae Oil (Vegan DHA/EPA)'},
+        {id:'su-s1-p5', text:'Vitamin D3 + K2'},
+        {id:'su-s1-p6', text:'Curcumin + Amla Extract'},
+        {id:'su-s1-p7', text:'Odorless Garlic — Dose 1'},
+      ]},
+    { id:'su-s2', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.12)', badgeColor:'#22d3a0',
+      label:'🚶 MIDDAY — Nature Walk', when:'L-Carnitine tissue saturation — both doses', alarm:'Midday',
+      note:'Take all L-Carnitine + Garlic at any point during or around the walk. No precise timing needed on rest days — just maintain daily tissue saturation.',
+      pills:[
+        {id:'su-s2-p0', text:'🚶 Long relaxed nature walk — no time pressure'},
+        {id:'su-s2-p1', text:'L-Carnitine — Doses 1+2 combined (maintain daily tissue levels)'},
+        {id:'su-s2-p2', text:'Odorless Garlic — Doses 2+3 combined (TMAO rule always active)'},
+      ]},
+    { id:'su-s3', slotColor:'#7c3aed', badgeBg:'rgba(124,58,237,0.15)', badgeColor:'#a78bfa',
+      label:'💊 EVENING BLOCKADE', when:'30 min before dinner — empty stomach', alarm:'⏰ 07:30 PM',
+      note:'Lipid blockade never takes a rest day.',
+      pills:[
+        {id:'su-s3-p0', text:'Berberine — 500 mg'},
+        {id:'su-s3-p1', text:'Citrus Bergamot — 500 mg'},
+        {id:'su-s3-p2', text:'Psyllium Husk — 5g in 16oz water with 1/4 tsp salt'},
+      ]},
+    { id:'su-s4', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌙 DINNER & FAST', when:'Final vegan meal — fast begins', alarm:'⏰ 08:00 PM',
+      note:'Same shutdown protocol as weekdays. Arjun Chaal Decoction — stand up slowly after drinking to avoid sudden blood pressure drops.',
+      pills:[
+        {id:'su-s4-p0', text:'🍽 Final vegan meal'},
+        {id:'su-s4-p1', text:'Plant Sterols — 1g'},
+        {id:'su-s4-p2', text:'Nicotinic Acid — micro-dose'},
+        {id:'su-s4-p3', text:'Ashwagandha'},
+        {id:'su-s4-p4', text:'🍵 Arjun Chaal Decoction — boil 1 tsp in 2 cups water down to 1 cup, strain, drink warm'},
+      ]},
+    { id:'su-s5', slotColor:'#5a5575', badgeBg:'rgba(90,85,117,0.2)', badgeColor:'#a78bfa',
+      label:'🌑 EXTENDED MEDITATION & SLEEP', when:'Deeper rest — no training load to process', alarm:'⏰ 09:00 PM',
+      note:'Sunday gets extended meditation. The body has less neurological load to process — this is the deepest sleep of the week. Protect it.',
+      pills:[
+        {id:'su-s5-p0', text:'🧘 Extended Meditation — NSDR or Vipassana'},
+        {id:'su-s5-p1', text:'🍋 Lemon Water with pinch of salt'},
+        {id:'su-s5-p2', text:'😴 Sleep — room black, cooled to 60–67°F (15–19°C)'},
+      ]},
+  ]
+};
+
+const SUPP_HEADER = {};
       note:'Zero supplements during fasted window. Keep the fasting window completely flat. Sunlight anchors circadian rhythm. Cold shower reduces systemic inflammation.',
       pills:[
         {id:'tr-s0-p0', text:'☕ Lung Cleanse Tea — 1 cup, immediately on wake'},
@@ -2209,7 +2372,8 @@ function renderSuppSlotHtml(slot, day, allSlots) {
   const dim = slot.slotColor === '#5a5575' ? ';opacity:0.6' : '';
   let pillsHtml = slot.pills.map(p => renderSuppPillHtml(p, slot.id, day)).join('');
   pillsHtml += `<button class="spe-add-btn" onclick="addSuppPill('${day}','${slot.id}')">+ Add item</button>`;
-  return `<div class="supp-slot" style="--slot-color:${slot.slotColor}${dim};">
+  const ph = slot.phaseHeader ? `<div class="supp-phase-header">${esc(slot.phaseHeader)}</div>` : '';
+  return `${ph}<div class="supp-slot" style="--slot-color:${slot.slotColor}${dim};">
   <div class="supp-slot-header">
     <span class="supp-time-badge" style="background:${slot.badgeBg};color:${slot.badgeColor};">${slot.label}</span>
     <span class="supp-slot-when">${esc(slot.when)}</span>
