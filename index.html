@@ -1838,6 +1838,7 @@ function setState(updater) {
   const next = updater(getState());
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(next));
+    if(typeof scheduleDriveAutoSave==='function') scheduleDriveAutoSave();
   } catch (e) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       alert('⚠️ Storage full — your recipes could not be saved.\n\nGo to Settings → Export Data to back up your data, then delete some recipes to free space.');
@@ -3031,6 +3032,7 @@ const DISCOVERY_DOCS=[
 ];
 let gapiReady=false;
 let driveFileId=null;
+let _driveAutoSaveTimer=null;
 
 function initGoogleAPI(){
   const clientId=getState().settings.googleClientId;
@@ -3041,9 +3043,60 @@ function initGoogleAPI(){
       gapiReady=true;
       const isSignedIn=gapi.auth2.getAuthInstance().isSignedIn.get();
       updateGoogleStatus(isSignedIn);
-      if(isSignedIn) loadCalendarEvents();
+      if(isSignedIn){ loadCalendarEvents(); autoLoadFromDrive(); }
     } catch(e){ console.warn('Google API init failed:',e); }
   });
+}
+
+function scheduleDriveAutoSave(){
+  if(!gapiReady||!gapi.auth2.getAuthInstance().isSignedIn.get()) return;
+  clearTimeout(_driveAutoSaveTimer);
+  _driveAutoSaveTimer=setTimeout(()=>autoSaveToDrive(),5000);
+}
+
+async function autoSaveToDrive(){
+  const statusEl=document.getElementById('sync-status');
+  if(statusEl) statusEl.textContent='↑ saving…';
+  const content=JSON.stringify(getState());
+  try {
+    if(!driveFileId){
+      const res=await gapi.client.drive.files.list({q:"name='lifeos-backup.json' and trashed=false",fields:'files(id)'});
+      driveFileId=res.result.files?.[0]?.id;
+      if(!driveFileId){
+        const meta=await gapi.client.drive.files.create({resource:{name:'lifeos-backup.json'},fields:'id'});
+        driveFileId=meta.result.id;
+      }
+    }
+    await gapi.client.request({path:`/upload/drive/v3/files/${driveFileId}`,method:'PATCH',
+      params:{uploadType:'media'},headers:{'Content-Type':'application/json'},body:content});
+    if(statusEl) statusEl.textContent='☁ saved '+new Date().toLocaleTimeString();
+  } catch(e){
+    if(statusEl) statusEl.textContent='☁ sync failed';
+    console.warn('Auto-save to Drive failed:',e);
+  }
+}
+
+async function autoLoadFromDrive(){
+  const statusEl=document.getElementById('sync-status');
+  if(statusEl) statusEl.textContent='↓ loading…';
+  try {
+    const res=await gapi.client.drive.files.list({q:"name='lifeos-backup.json' and trashed=false",fields:'files(id)'});
+    const fileId=res.result.files?.[0]?.id;
+    if(!fileId){ if(statusEl) statusEl.textContent='☁ no backup'; return; }
+    driveFileId=fileId;
+    const dl=await gapi.client.drive.files.get({fileId,alt:'media'});
+    const raw=typeof dl.body==='string'?dl.body:(dl.result?JSON.stringify(dl.result):null);
+    if(!raw){ if(statusEl) statusEl.textContent='☁ empty backup'; return; }
+    localStorage.setItem(STORE_KEY,raw);
+    if(statusEl) statusEl.textContent='☁ synced '+new Date().toLocaleTimeString();
+    // Refresh current visible section
+    const activeSection=document.querySelector('.section.active');
+    if(activeSection&&sectionRenderers[activeSection.id]) sectionRenderers[activeSection.id]();
+    showToast('☁ Synced from Drive');
+  } catch(e){
+    if(statusEl) statusEl.textContent='☁ load failed';
+    console.warn('Auto-load from Drive failed:',e);
+  }
 }
 
 function updateGoogleStatus(signedIn){
@@ -3065,6 +3118,7 @@ function googleSignIn(){
     updateGoogleStatus(true);
     showToast('Google connected ✓');
     loadCalendarEvents();
+    autoLoadFromDrive();
   });
 }
 
