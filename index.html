@@ -2191,8 +2191,7 @@ function getSuppData(day) {
 }
 
 function saveSuppData(day, slots) {
-  const s = getState();
-  setState({...s, supp: {...(s.supp||{}), [day]: slots}});
+  setState(s => ({...s, supp: {...(s.supp||{}), [day]: slots}}));
 }
 
 function renderSuppPanel(day) {
