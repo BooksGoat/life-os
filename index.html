@@ -4105,7 +4105,7 @@ function importRecipeFromScreenshot() {
 // ── YouTube import ────────────────────────────────────────────────────────
 async function importFromYouTube(url) {
   showParseProgress('Fetching YouTube info…', 0.1);
-  const PROXY = 'https://corsproxy.io/?url=';
+  const PROXY = u => 'https://corsproxy.io/?url=' + encodeURIComponent(u);
   let title = '', thumbnailUrl = '', description = '';
 
   // normalise Shorts → watch URL for oembed compatibility
@@ -4120,7 +4120,7 @@ async function importFromYouTube(url) {
   // get description from page (YouTube pages are huge — skip gracefully on 413/error)
   showParseProgress('Fetching video description…', 0.3);
   try {
-    const r = await fetch(PROXY + encodeURIComponent(oembedUrl), { signal: AbortSignal.timeout(15000) });
+    const r = await fetch(PROXY(oembedUrl), { signal: AbortSignal.timeout(15000) });
     if (r.ok && r.status !== 413) {
       const html = await r.text();
       const m = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
@@ -4264,17 +4264,26 @@ async function importRecipeFromUrl() {
 
   if (/youtube\.com\/(watch|shorts)|youtu\.be\//.test(url)) return importFromYouTube(url);
 
-  const PROXY = 'https://corsproxy.io/?url=';
+  const PROXIES = [
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+  ];
 
   showParseProgress('Fetching recipe…', 0.1);
   let html;
-  try {
-    const resp = await fetch(PROXY + encodeURIComponent(url));
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    html = await resp.text();
-  } catch(e) {
+  let lastErr = '';
+  for (const makeProxy of PROXIES) {
+    try {
+      const resp = await fetch(makeProxy(url));
+      if (!resp.ok) { lastErr = 'HTTP ' + resp.status; continue; }
+      html = await resp.text();
+      break;
+    } catch(e) { lastErr = e.message; }
+  }
+  if (!html) {
     hideParseProgress();
-    alert('Could not fetch URL: ' + e.message);
+    alert('Could not fetch URL: ' + lastErr);
     return;
   }
 
