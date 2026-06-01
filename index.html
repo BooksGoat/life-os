@@ -768,6 +768,18 @@
     .supp-pill em { color:var(--muted); font-style:normal; font-size:11px; margin-left:3px; }
     .supp-note { font-size:12px; color:var(--muted); border-top:1px solid var(--border); padding-top:8px; line-height:1.5; }
     .supp-alarm { margin-left:auto; color:#22d3a0; font-size:14px; font-weight:700; white-space:nowrap; letter-spacing:.01em; }
+    .spe-pill { display:inline-flex; align-items:center; gap:4px; cursor:default; }
+    .spe-text { cursor:pointer; }
+    .spe-text:hover { color:#c4b5fd; text-decoration:underline dotted; }
+    .spe-actions { display:none; gap:2px; align-items:center; }
+    .spe-pill:hover .spe-actions { display:inline-flex; }
+    .spe-btn { border:none; background:transparent; color:var(--muted); cursor:pointer; font-size:10px; padding:0 3px; line-height:1.4; border-radius:3px; }
+    .spe-btn:hover { color:var(--text); background:rgba(255,255,255,0.08); }
+    .spe-del:hover { color:#f472b6 !important; }
+    .spe-move:hover { color:#60a5fa !important; }
+    .spe-input { background:var(--s1); border:1px solid var(--purple); border-radius:6px; color:var(--text); padding:3px 8px; font-size:12px; min-width:140px; outline:none; }
+    .spe-add-btn { background:transparent; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-size:11px; padding:3px 10px; cursor:pointer; margin-top:2px; }
+    .spe-add-btn:hover { border-color:var(--purple); color:var(--purple); }
     .supp-rules-card { border:1px solid rgba(244,114,182,0.25) !important; background:rgba(244,114,182,0.04) !important; }
     #mealtype-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center; }
     .mealtype-picker-box { background:#111120;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px 24px;max-width:340px;width:90%;text-align:center; }
@@ -1312,339 +1324,10 @@
       <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">😴 Full Rest (Sun)</button>
     </div>
 
-    <!-- Training Day Schedule -->
-    <div id="supp-panel-training">
+    <div id="supp-panel-training"></div>
+    <div id="supp-panel-cardio" class="hidden"></div>
+    <div id="supp-panel-rest" class="hidden"></div>
 
-      <div class="supp-slot" style="--slot-color:#a78bfa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
-          <span class="supp-slot-when">Hydrotherapy & circadian anchoring</span>
-          <span class="supp-alarm">⏰ 4:45 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">☕ Lung Cleanse Tea <b>1 cup</b> <em>immediately on wake</em></span>
-          <span class="supp-pill">☀️ Morning Sunlight <b>10–15 min</b> <em>5:00 AM — direct exposure</em></span>
-          <span class="supp-pill">🧘 Pranayama + Hatha Yoga <b>45 min</b> <em>5:15–6:00 AM</em></span>
-          <span class="supp-pill">🧊 Cold Shower (Cryotherapy) <b>6:00 AM</b></span>
-        </div>
-        <div class="supp-note">Zero supplements during fasted window. Keep the fasting window completely flat. Sunlight anchors circadian rhythm. Cold shower reduces systemic inflammation.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f09030;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
-          <span class="supp-slot-when">Vegan fast-breaker — fat-soluble vitamin stack</span>
-          <span class="supp-alarm">⏰ 10:00 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">🥑 Tofu + Avocado + Walnuts <b>high-fat vegan meal</b></span>
-          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b> <em>fat-soluble</em></span>
-          <span class="supp-pill">Fish Oil <b>high-potency Omega-3</b></span>
-          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b> <em>fat-soluble anti-inflammatory</em></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>glycemic control</em></span>
-        </div>
-        <div class="supp-note">Avocado + walnuts = lipid vehicle for D3, Curcumin, Omega-3. All fat-soluble — absorption crashes without dietary fat. No spike, no insulin surge.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">⚡ PRE-WORKOUT SHIELD</span>
-          <span class="supp-slot-when">TMAO suppression + carnitine loading — 2 hrs before training</span>
-          <span class="supp-alarm">⏰ 12:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>Dose 1</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">NOW Foods Odorless Garlic <b>500 mg</b> <em>Dose 2 — CRITICAL: blocks TMAO conversion</em></span>
-        </div>
-        <div class="supp-note">CRITICAL: Must take L-Carnitine and Garlic together. Garlic suppresses TMAO conversion. L-Carnitine loads the bloodstream 2 hours before training window.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#60a5fa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(96,165,250,0.15);color:#60a5fa;">💊 30-MIN PRE-WORKOUT BLOCKADE</span>
-          <span class="supp-slot-when">Blunts glycemic response — empty stomach required</span>
-          <span class="supp-alarm">⏰ 1:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 1</em></span>
-          <span class="supp-pill">Psyllium Husk <b>5g</b> <em>Dose 1 — mixed in 16oz water, consumed immediately</em></span>
-        </div>
-        <div class="supp-note">Empty stomach required. Upregulates liver LDL receptors. Intercepts bile acids. Must be 30 min before training starts at 2:00 PM.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f472b6;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(244,114,182,0.15);color:#f472b6;">🏋 THE BARBELL SESSION</span>
-          <span class="supp-slot-when">Sip electrolytes continuously throughout</span>
-          <span class="supp-alarm">⏰ 2:00–3:15 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Electrolyte + High-Sodium Water Matrix <b>500–1,000 mg sodium</b></span>
-        </div>
-        <div class="supp-note">Never plain water alone during session. Plain water during 60+ min sessions dilutes plasma sodium. Non-negotiable for performance and safety.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#8a5cf6;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">🥩 AFTERNOON RECOVERY</span>
-          <span class="supp-slot-when">Drive nutrients into muscle — TMAO shield for Dose 2</span>
-          <span class="supp-alarm">⏰ 4:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">🍽 Post-Workout Meal <b>high protein + clean carbs</b></span>
-          <span class="supp-pill" style="background:rgba(138,92,246,0.08);border-color:rgba(138,92,246,0.25);color:#a78bfa;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>Dose 2</em></span>
-          <span class="supp-pill" style="background:rgba(138,92,246,0.08);border-color:rgba(138,92,246,0.25);color:#a78bfa;">NOW Foods Odorless Garlic <b>500 mg</b> <em>Dose 3 — CRITICAL: TMAO shield for Dose 2</em></span>
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>blocks late-afternoon cholesterol reabsorption</em></span>
-        </div>
-        <div class="supp-note">CRITICAL: L-Carnitine Dose 2 always paired with Garlic Dose 3. Plant Sterols physically intercept dietary cholesterol during the meal. Insulin response drives carnitine into muscle cells.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 DOWN-REGULATION WINDOW</span>
-          <span class="supp-slot-when">Reset nervous system — fight-or-flight → rest</span>
-          <span class="supp-alarm">⏰ 5:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Yoga Nidra (NSDR) <b>20–30 min</b></span>
-        </div>
-        <div class="supp-note">Non-Sleep Deep Rest resets the CNS from training load. Accelerates muscle healing and hormonal recovery. Critical after heavy barbell sessions.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#7c3aed;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 30-MIN PRE-DINNER BLOCKADE</span>
-          <span class="supp-slot-when">Empty stomach — 30 min before dinner</span>
-          <span class="supp-alarm">⏰ 7:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
-          <span class="supp-pill">Psyllium Husk <b>5g</b> <em>Dose 2 — mixed in 16oz water, consumed immediately</em></span>
-        </div>
-        <div class="supp-note">Second blockade blunts evening glucose spike. Empty stomach required — do not eat until 30 min have passed.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">🌙 DOWN-REGULATION & FAST</span>
-          <span class="supp-slot-when">Eating window closes — 14-hour fast begins</span>
-          <span class="supp-alarm">🕗 8:00–8:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b> <em>with dinner</em></span>
-        </div>
-        <div class="supp-note">Flattens CNS and crashes evening cortisol. Preps sleep architecture. 14-hour fast begins now — water and herbal tea only until 10 AM. Cycle: 8–12 weeks on → 2–4 weeks off.</div>
-      </div>
-
-    </div>
-
-    <!-- Cardio Day (Wed, Sat) Schedule -->
-    <div id="supp-panel-cardio" class="hidden">
-      <div class="card" style="margin-bottom:12px;background:rgba(34,211,160,0.06);border-color:rgba(34,211,160,0.2);">
-        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Cardio day — intense aerobic work + core. L-Carnitine + Garlic shift to 10 AM (no pre-workout lifting window). <b style="color:var(--text);">Electrolyte sodium matrix still active</b> during cardio session — you are sweating heavily. No sauna needed (cardio IS the heat stimulus).</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#a78bfa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
-          <span class="supp-slot-when">Identical to training days</span>
-          <span class="supp-alarm">⏰ 4:45 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower</span>
-        </div>
-        <div class="supp-note">Circadian anchoring is non-negotiable every day.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f09030;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
-          <span class="supp-slot-when">Standard stack + L-Carnitine + Garlic shifted here</span>
-          <span class="supp-alarm">⏰ 10:00 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">🥚 Eggs + Avocado <b>high-fat meal</b></span>
-          <span class="supp-pill">Omega-3 Fish Oil <b>1,000–2,000 mg</b></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
-          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
-          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>cardio day shift</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield — daily</em></span>
-        </div>
-        <div class="supp-note">No pre-workout window on cardio days — L-Carnitine loads at breakfast instead. TMAO rule never takes a day off.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.12);color:#22d3a0;">🍌 PRE-CARDIO SNACK</span>
-          <span class="supp-slot-when">Light carbs to fuel aerobic output</span>
-          <span class="supp-alarm">⏰ 1:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">🍌 Banana or fruit — light carb fuel</span>
-          <span class="supp-pill">Berberine <b>500 mg</b> + Psyllium Husk <b>5g</b> <em>pre-cardio blockade</em></span>
-        </div>
-        <div class="supp-note">Berberine blunts any glycaemic spike from the snack. No L-Carnitine here — already taken at 10 AM.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🏃 CARDIO SESSION</span>
-          <span class="supp-slot-when">Electrolytes active — you are sweating</span>
-          <span class="supp-alarm">⏰ 2:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">⚡ Electrolyte + Sodium Matrix <b>500–1,000 mg sodium</b> <em>sip continuously</em></span>
-        </div>
-        <div class="supp-note">Wed: 45 min aerobic run (threshold → Zone 2). Sat: VO2 max sprints 6×1 min @ 16.5–17.5 km/h. Sodium still required — sweat loss is high. Never plain water alone.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f09030;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🥩 POST-CARDIO LUNCH</span>
-          <span class="supp-slot-when">Plant Sterols during meal</span>
-          <span class="supp-alarm">⏰ 4:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">High protein + clean carbs</span>
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
-        </div>
-        <div class="supp-note">No L-Carnitine or Garlic here — already taken at breakfast. Sterols intercept dietary cholesterol as always.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 YOGA NIDRA (NSDR)</span>
-          <span class="supp-slot-when">CNS recovery — still runs on cardio days</span>
-          <span class="supp-alarm">⏰ 5:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Yoga Nidra <b>20–30 min</b></span>
-        </div>
-        <div class="supp-note">Cardio creates significant CNS load. NSDR resets the nervous system and accelerates aerobic recovery.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#7c3aed;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 EVENING BLOCKADE</span>
-          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
-          <span class="supp-alarm">⏰ 7:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
-          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
-        </div>
-        <div class="supp-note">Lipid blockade never takes a day off. Same as training days.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#8a5cf6;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">🌙 DINNER & FAST</span>
-          <span class="supp-slot-when">Eating window closes 8:00 PM</span>
-          <span class="supp-alarm">🕗 8:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
-        </div>
-        <div class="supp-note">Take with dinner. Blunts cortisol from cardio load, preps sleep architecture. 14-hour fast begins now.</div>
-      </div>
-    </div>
-
-    <!-- Full Rest Day (Sun) Schedule -->
-    <div id="supp-panel-rest" class="hidden">
-      <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
-        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Sunday — zero structured exercise. Same eating window (10 AM–8 PM), same morning wellness. L-Carnitine + Garlic at breakfast. No electrolytes, no sauna. Full CNS recovery.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#a78bfa;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
-          <span class="supp-slot-when">Same as training days</span>
-          <span class="supp-alarm">⏰ 4:45 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower</span>
-        </div>
-        <div class="supp-note">Morning wellness routine does not change on rest days. Circadian anchoring is non-negotiable.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#f09030;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
-          <span class="supp-slot-when">High-fat meal + L-Carnitine moved here on rest days</span>
-          <span class="supp-alarm">⏰ 10:00 AM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">🥚 Eggs + Avocado <b>high-fat meal</b></span>
-          <span class="supp-pill">Omega-3 Fish Oil <b>1,000–2,000 mg</b></span>
-          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
-          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
-          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>rest day shift</em></span>
-          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield — daily</em></span>
-        </div>
-        <div class="supp-note">L-Carnitine + Garlic move here since there is no pre-workout window. TMAO rule never has a day off. Lp(a) suppression requires daily saturation.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.12);color:#22d3a0;">🍽 LUNCH</span>
-          <span class="supp-slot-when">Plant Sterols during meal</span>
-          <span class="supp-alarm">⏰ 1:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
-        </div>
-        <div class="supp-note">Must mix with food. No L-Carnitine or Garlic here on rest days — already taken at breakfast.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.55;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">😴 ABSOLUTE REST</span>
-          <span class="supp-slot-when">Zero structured exercise — CNS recovery day</span>
-          <span class="supp-alarm" style="color:#5a5575;">2:00 PM</span>
-        </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Walking, deep stretching, mobility only. No barbell, no cardio, no electrolyte matrix. Cortisol at rock bottom by end of day.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#22d3a0;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 DOWN-REGULATION WINDOW</span>
-          <span class="supp-slot-when">NSDR still runs on rest days</span>
-          <span class="supp-alarm">⏰ 5:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Yoga Nidra (NSDR) <b>20–30 min</b></span>
-        </div>
-        <div class="supp-note">Nervous system reset is beneficial even without training load. Maintains the daily practice.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#7c3aed;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 EVENING BLOCKADE</span>
-          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
-          <span class="supp-alarm">⏰ 7:30 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
-          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
-        </div>
-        <div class="supp-note">Lipid blockade never takes a rest day. Same as training days.</div>
-      </div>
-
-      <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.7;">
-        <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#8a5cf6;">🌙 DINNER & 14-HOUR FAST</span>
-          <span class="supp-slot-when">Eating window closes — fast begins immediately at 8:00 PM</span>
-          <span class="supp-alarm">🕗 8:00 PM</span>
-        </div>
-        <div class="supp-pills">
-          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
-        </div>
-        <div class="supp-note">Take with dinner. Blunts cortisol, preps sleep architecture as fasting clock starts. Cycle: 8–12 weeks on → 2–4 weeks off.</div>
-      </div>
-
-    </div>
 
     <!-- Month 1 Onboarding -->
     <div class="card" style="margin-top:20px;margin-bottom:16px;">
@@ -2330,6 +2013,312 @@ function switchSuppDay(day) {
     document.getElementById('supp-panel-'+d).classList.toggle('hidden', d!==day);
     document.getElementById('supp-day-'+d).className = 'btn' + (d===day?' btn-primary':'');
   });
+  renderSuppPanel(day);
+}
+
+// ── SUPPLEMENT DATA & RENDER ──────────────────────────────
+const SUPP_DEFAULT = {
+  training: [
+    { id:'tr-s0', slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
+      label:'🌄 MORNING WELLNESS', when:'Hydrotherapy & circadian anchoring', alarm:'⏰ 4:45 AM',
+      note:'Zero supplements during fasted window. Keep the fasting window completely flat. Sunlight anchors circadian rhythm. Cold shower reduces systemic inflammation.',
+      pills:[
+        {id:'tr-s0-p0', text:'☕ Lung Cleanse Tea — 1 cup, immediately on wake'},
+        {id:'tr-s0-p1', text:'☀️ Morning Sunlight — 10–15 min, 5:00 AM direct exposure'},
+        {id:'tr-s0-p2', text:'🧘 Pranayama + Hatha Yoga — 45 min, 5:15–6:00 AM'},
+        {id:'tr-s0-p3', text:'🧊 Cold Shower (Cryotherapy) — 6:00 AM'},
+      ]},
+    { id:'tr-s1', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌅 BREAKING THE FAST', when:'Vegan fast-breaker — fat-soluble vitamin stack', alarm:'⏰ 10:00 AM',
+      note:'Avocado + walnuts = lipid vehicle for D3, Curcumin, Omega-3. All fat-soluble — absorption crashes without dietary fat. No spike, no insulin surge.',
+      pills:[
+        {id:'tr-s1-p0', text:'🥑 Tofu + Avocado + Walnuts — high-fat vegan meal'},
+        {id:'tr-s1-p1', text:'Vitamin D3 + K2 — 2,000–5,000 IU (fat-soluble)'},
+        {id:'tr-s1-p2', text:'Fish Oil — high-potency Omega-3'},
+        {id:'tr-s1-p3', text:'Curcumin + Piperine — 500 mg (fat-soluble anti-inflammatory)'},
+        {id:'tr-s1-p4', text:'Amla Extract — 500 mg (glycemic control)'},
+      ]},
+    { id:'tr-s2', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'⚡ PRE-WORKOUT SHIELD', when:'TMAO suppression + carnitine loading — 2 hrs before training', alarm:'⏰ 12:00 PM',
+      note:'CRITICAL: Must take L-Carnitine and Garlic together. Garlic suppresses TMAO conversion. L-Carnitine loads the bloodstream 2 hours before training window.',
+      pills:[
+        {id:'tr-s2-p0', text:'L-Carnitine L-Tartrate — 1,000 mg Dose 1'},
+        {id:'tr-s2-p1', text:'NOW Foods Odorless Garlic — 500 mg Dose 2 (CRITICAL: blocks TMAO conversion)'},
+      ]},
+    { id:'tr-s3', slotColor:'#60a5fa', badgeBg:'rgba(96,165,250,0.15)', badgeColor:'#60a5fa',
+      label:'💊 30-MIN PRE-WORKOUT BLOCKADE', when:'Blunts glycemic response — empty stomach required', alarm:'⏰ 1:30 PM',
+      note:'Empty stomach required. Upregulates liver LDL receptors. Intercepts bile acids. Must be 30 min before training starts at 2:00 PM.',
+      pills:[
+        {id:'tr-s3-p0', text:'Berberine — 500 mg Dose 1'},
+        {id:'tr-s3-p1', text:'Psyllium Husk — 5g Dose 1, mixed in 16oz water, consumed immediately'},
+      ]},
+    { id:'tr-s4', slotColor:'#f472b6', badgeBg:'rgba(244,114,182,0.15)', badgeColor:'#f472b6',
+      label:'🏋 THE BARBELL SESSION', when:'Sip electrolytes continuously throughout', alarm:'⏰ 2:00–3:15 PM',
+      note:'Never plain water alone during session. Plain water during 60+ min sessions dilutes plasma sodium. Non-negotiable for performance and safety.',
+      pills:[
+        {id:'tr-s4-p0', text:'Electrolyte + High-Sodium Water Matrix — 500–1,000 mg sodium'},
+      ]},
+    { id:'tr-s5', slotColor:'#8a5cf6', badgeBg:'rgba(138,92,246,0.15)', badgeColor:'#8a5cf6',
+      label:'🥩 AFTERNOON RECOVERY', when:'Drive nutrients into muscle — TMAO shield for Dose 2', alarm:'⏰ 4:00 PM',
+      note:'CRITICAL: L-Carnitine Dose 2 always paired with Garlic Dose 3. Plant Sterols physically intercept dietary cholesterol during the meal. Insulin response drives carnitine into muscle cells.',
+      pills:[
+        {id:'tr-s5-p0', text:'🍽 Post-Workout Meal — high protein + clean carbs'},
+        {id:'tr-s5-p1', text:'L-Carnitine L-Tartrate — 1,000 mg Dose 2'},
+        {id:'tr-s5-p2', text:'NOW Foods Odorless Garlic — 500 mg Dose 3 (CRITICAL: TMAO shield for Dose 2)'},
+        {id:'tr-s5-p3', text:'Plant Sterols — 1–1.5g (blocks late-afternoon cholesterol reabsorption)'},
+      ]},
+    { id:'tr-s6', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🧘 DOWN-REGULATION WINDOW', when:'Reset nervous system — fight-or-flight → rest', alarm:'⏰ 5:30 PM',
+      note:'Non-Sleep Deep Rest resets the CNS from training load. Accelerates muscle healing and hormonal recovery. Critical after heavy barbell sessions.',
+      pills:[
+        {id:'tr-s6-p0', text:'Yoga Nidra (NSDR) — 20–30 min'},
+      ]},
+    { id:'tr-s7', slotColor:'#7c3aed', badgeBg:'rgba(124,58,237,0.15)', badgeColor:'#a78bfa',
+      label:'💊 30-MIN PRE-DINNER BLOCKADE', when:'Empty stomach — 30 min before dinner', alarm:'⏰ 7:30 PM',
+      note:'Second blockade blunts evening glucose spike. Empty stomach required — do not eat until 30 min have passed.',
+      pills:[
+        {id:'tr-s7-p0', text:'Berberine — 500 mg Dose 2'},
+        {id:'tr-s7-p1', text:'Psyllium Husk — 5g Dose 2, mixed in 16oz water, consumed immediately'},
+      ]},
+    { id:'tr-s8', slotColor:'#5a5575', badgeBg:'rgba(138,92,246,0.15)', badgeColor:'#8a5cf6',
+      label:'🌙 DOWN-REGULATION & FAST', when:'Eating window closes — 14-hour fast begins', alarm:'🕗 8:00–8:30 PM',
+      note:'Flattens CNS and crashes evening cortisol. Preps sleep architecture. 14-hour fast begins now — water and herbal tea only until 10 AM. Cycle: 8–12 weeks on → 2–4 weeks off.',
+      pills:[
+        {id:'tr-s8-p0', text:'Ashwagandha KSM-66 — 300–600 mg, with dinner'},
+      ]},
+  ],
+  cardio: [
+    { id:'ca-s0', slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
+      label:'🌄 MORNING WELLNESS', when:'Identical to training days', alarm:'⏰ 4:45 AM',
+      note:'Circadian anchoring is non-negotiable every day.',
+      pills:[{id:'ca-s0-p0', text:'☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower'}]},
+    { id:'ca-s1', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌅 BREAKING THE FAST', when:'Standard stack + L-Carnitine + Garlic shifted here', alarm:'⏰ 10:00 AM',
+      note:'No pre-workout window on cardio days — L-Carnitine loads at breakfast instead. TMAO rule never takes a day off.',
+      pills:[
+        {id:'ca-s1-p0', text:'🥚 Eggs + Avocado — high-fat meal'},
+        {id:'ca-s1-p1', text:'Omega-3 Fish Oil — 1,000–2,000 mg'},
+        {id:'ca-s1-p2', text:'Amla Extract — 500 mg Dose 1'},
+        {id:'ca-s1-p3', text:'Curcumin + Piperine — 500 mg'},
+        {id:'ca-s1-p4', text:'Vitamin D3 + K2 — 2,000–5,000 IU'},
+        {id:'ca-s1-p5', text:'L-Carnitine L-Tartrate — 1,000 mg (cardio day shift)'},
+        {id:'ca-s1-p6', text:'Odourless Garlic Extract — 500 mg (TMAO shield — daily)'},
+      ]},
+    { id:'ca-s2', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.12)', badgeColor:'#22d3a0',
+      label:'🍌 PRE-CARDIO SNACK', when:'Light carbs to fuel aerobic output', alarm:'⏰ 1:00 PM',
+      note:'Berberine blunts any glycaemic spike from the snack. No L-Carnitine here — already taken at 10 AM.',
+      pills:[
+        {id:'ca-s2-p0', text:'🍌 Banana or fruit — light carb fuel'},
+        {id:'ca-s2-p1', text:'Berberine 500 mg + Psyllium Husk 5g — pre-cardio blockade'},
+      ]},
+    { id:'ca-s3', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🏃 CARDIO SESSION', when:'Electrolytes active — you are sweating', alarm:'⏰ 2:00 PM',
+      note:'Wed: 45 min aerobic run (threshold → Zone 2). Sat: VO2 max sprints 6×1 min @ 16.5–17.5 km/h. Sodium still required — sweat loss is high. Never plain water alone.',
+      pills:[{id:'ca-s3-p0', text:'⚡ Electrolyte + Sodium Matrix — 500–1,000 mg sodium, sip continuously'}]},
+    { id:'ca-s4', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🥩 POST-CARDIO LUNCH', when:'Plant Sterols during meal', alarm:'⏰ 4:00 PM',
+      note:'No L-Carnitine or Garlic here — already taken at breakfast. Sterols intercept dietary cholesterol as always.',
+      pills:[
+        {id:'ca-s4-p0', text:'High protein + clean carbs'},
+        {id:'ca-s4-p1', text:'Plant Sterols — 1–1.5g Dose 1, during meal'},
+      ]},
+    { id:'ca-s5', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🧘 YOGA NIDRA (NSDR)', when:'CNS recovery — still runs on cardio days', alarm:'⏰ 5:30 PM',
+      note:'Cardio creates significant CNS load. NSDR resets the nervous system and accelerates aerobic recovery.',
+      pills:[{id:'ca-s5-p0', text:'Yoga Nidra — 20–30 min'}]},
+    { id:'ca-s6', slotColor:'#7c3aed', badgeBg:'rgba(124,58,237,0.15)', badgeColor:'#a78bfa',
+      label:'💊 EVENING BLOCKADE', when:'30 min before dinner — empty stomach', alarm:'⏰ 7:30 PM',
+      note:'Lipid blockade never takes a day off. Same as training days.',
+      pills:[
+        {id:'ca-s6-p0', text:'Berberine — 500 mg Dose 2'},
+        {id:'ca-s6-p1', text:'Raw Psyllium Husk — 5g in 16oz water'},
+      ]},
+    { id:'ca-s7', slotColor:'#8a5cf6', badgeBg:'rgba(138,92,246,0.15)', badgeColor:'#8a5cf6',
+      label:'🌙 DINNER & FAST', when:'Eating window closes 8:00 PM', alarm:'🕗 8:00 PM',
+      note:'Take with dinner. Blunts cortisol from cardio load, preps sleep architecture. 14-hour fast begins now.',
+      pills:[{id:'ca-s7-p0', text:'Ashwagandha KSM-66 — 300–600 mg'}]},
+  ],
+  rest: [
+    { id:'re-s0', slotColor:'#a78bfa', badgeBg:'rgba(167,139,250,0.15)', badgeColor:'#a78bfa',
+      label:'🌄 MORNING WELLNESS', when:'Same as training days', alarm:'⏰ 4:45 AM',
+      note:'Morning wellness routine does not change on rest days. Circadian anchoring is non-negotiable.',
+      pills:[{id:'re-s0-p0', text:'☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower'}]},
+    { id:'re-s1', slotColor:'#f09030', badgeBg:'rgba(240,144,48,0.15)', badgeColor:'#f09030',
+      label:'🌅 BREAKING THE FAST', when:'High-fat meal + L-Carnitine moved here on rest days', alarm:'⏰ 10:00 AM',
+      note:'L-Carnitine + Garlic move here since there is no pre-workout window. TMAO rule never has a day off. Lp(a) suppression requires daily saturation.',
+      pills:[
+        {id:'re-s1-p0', text:'🥚 Eggs + Avocado — high-fat meal'},
+        {id:'re-s1-p1', text:'Omega-3 Fish Oil — 1,000–2,000 mg'},
+        {id:'re-s1-p2', text:'Amla Extract — 500 mg Dose 1'},
+        {id:'re-s1-p3', text:'Curcumin + Piperine — 500 mg'},
+        {id:'re-s1-p4', text:'Vitamin D3 + K2 — 2,000–5,000 IU'},
+        {id:'re-s1-p5', text:'L-Carnitine L-Tartrate — 1,000 mg (rest day shift)'},
+        {id:'re-s1-p6', text:'Odourless Garlic Extract — 500 mg (TMAO shield — daily)'},
+      ]},
+    { id:'re-s2', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.12)', badgeColor:'#22d3a0',
+      label:'🍽 LUNCH', when:'Plant Sterols during meal', alarm:'⏰ 1:00 PM',
+      note:'Must mix with food. No L-Carnitine or Garlic here on rest days — already taken at breakfast.',
+      pills:[{id:'re-s2-p0', text:'Plant Sterols — 1–1.5g Dose 1, during meal'}]},
+    { id:'re-s3', slotColor:'#5a5575', badgeBg:'rgba(90,85,117,0.2)', badgeColor:'#5a5575',
+      label:'😴 ABSOLUTE REST', when:'Zero structured exercise — CNS recovery day', alarm:'2:00 PM',
+      note:'Walking, deep stretching, mobility only. No barbell, no cardio, no electrolyte matrix. Cortisol at rock bottom by end of day.',
+      pills:[]},
+    { id:'re-s4', slotColor:'#22d3a0', badgeBg:'rgba(34,211,160,0.15)', badgeColor:'#22d3a0',
+      label:'🧘 DOWN-REGULATION WINDOW', when:'NSDR still runs on rest days', alarm:'⏰ 5:30 PM',
+      note:'Nervous system reset is beneficial even without training load. Maintains the daily practice.',
+      pills:[{id:'re-s4-p0', text:'Yoga Nidra (NSDR) — 20–30 min'}]},
+    { id:'re-s5', slotColor:'#7c3aed', badgeBg:'rgba(124,58,237,0.15)', badgeColor:'#a78bfa',
+      label:'💊 EVENING BLOCKADE', when:'30 min before dinner — empty stomach', alarm:'⏰ 7:30 PM',
+      note:'Lipid blockade never takes a rest day. Same as training days.',
+      pills:[
+        {id:'re-s5-p0', text:'Berberine — 500 mg Dose 2'},
+        {id:'re-s5-p1', text:'Raw Psyllium Husk — 5g in 16oz water'},
+      ]},
+    { id:'re-s6', slotColor:'#5a5575', badgeBg:'rgba(90,85,117,0.2)', badgeColor:'#8a5cf6',
+      label:'🌙 DINNER & 14-HOUR FAST', when:'Eating window closes — fast begins immediately at 8:00 PM', alarm:'🕗 8:00 PM',
+      note:'Take with dinner. Blunts cortisol, preps sleep architecture as fasting clock starts. Cycle: 8–12 weeks on → 2–4 weeks off.',
+      pills:[{id:'re-s6-p0', text:'Ashwagandha KSM-66 — 300–600 mg'}]},
+  ]
+};
+
+const SUPP_HEADER = {
+  cardio: '<div class="card" style="margin-bottom:12px;background:rgba(34,211,160,0.06);border-color:rgba(34,211,160,0.2);"><div style="color:#a09ab8;font-size:13px;line-height:1.5;">Cardio day — intense aerobic work + core. L-Carnitine + Garlic shift to 10 AM (no pre-workout lifting window). <b style="color:var(--text);">Electrolyte sodium matrix still active</b> during cardio session — you are sweating heavily. No sauna needed (cardio IS the heat stimulus).</div></div>',
+  rest: '<div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);"><div style="color:#a09ab8;font-size:13px;line-height:1.5;">Sunday — zero structured exercise. Same eating window (10 AM–8 PM), same morning wellness. L-Carnitine + Garlic at breakfast. No electrolytes, no sauna. Full CNS recovery.</div></div>',
+};
+
+function getSuppData(day) {
+  const s = getState();
+  return (s.supp && s.supp[day]) ? s.supp[day] : JSON.parse(JSON.stringify(SUPP_DEFAULT[day]));
+}
+
+function saveSuppData(day, slots) {
+  const s = getState();
+  setState({...s, supp: {...(s.supp||{}), [day]: slots}});
+}
+
+function renderSuppPanel(day) {
+  const el = document.getElementById('supp-panel-' + day);
+  if (!el || el.classList.contains('hidden')) return;
+  const slots = getSuppData(day);
+  let html = SUPP_HEADER[day] || '';
+  slots.forEach(slot => { html += renderSuppSlotHtml(slot, day, slots); });
+  el.innerHTML = html;
+}
+
+function renderSuppSlotHtml(slot, day, allSlots) {
+  const dim = slot.slotColor === '#5a5575' ? ';opacity:0.6' : '';
+  let pillsHtml = slot.pills.map(p => renderSuppPillHtml(p, slot.id, day)).join('');
+  pillsHtml += `<button class="spe-add-btn" onclick="addSuppPill('${day}','${slot.id}')">+ Add item</button>`;
+  return `<div class="supp-slot" style="--slot-color:${slot.slotColor}${dim};">
+  <div class="supp-slot-header">
+    <span class="supp-time-badge" style="background:${slot.badgeBg};color:${slot.badgeColor};">${slot.label}</span>
+    <span class="supp-slot-when">${esc(slot.when)}</span>
+    <span class="supp-alarm">${esc(slot.alarm)}</span>
+  </div>
+  <div class="supp-pills" id="supp-pills-${slot.id}">${pillsHtml}</div>
+  <div class="supp-note">${esc(slot.note)}</div>
+</div>`;
+}
+
+function renderSuppPillHtml(pill, slotId, day) {
+  return `<span class="spe-pill" id="spe-${pill.id}"><span class="spe-text" onclick="editSuppPill('${day}','${slotId}','${pill.id}')">${esc(pill.text)}</span><span class="spe-actions"><button class="spe-btn spe-del" onclick="deleteSuppPill('${day}','${slotId}','${pill.id}')" title="Delete">✕</button><button class="spe-btn spe-move" onclick="moveSuppPillUI('${day}','${slotId}','${pill.id}')" title="Move to slot">⟶</button></span></span>`;
+}
+
+function editSuppPill(day, slotId, pillId) {
+  const el = document.getElementById('spe-' + pillId);
+  if (!el) return;
+  const slots = getSuppData(day);
+  const slot = slots.find(s => s.id === slotId);
+  if (!slot) return;
+  const pill = slot.pills.find(p => p.id === pillId);
+  if (!pill) return;
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'spe-input';
+  inp.value = pill.text;
+  inp.onblur = () => saveSuppEdit(day, slotId, pillId, inp.value);
+  inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = pill.text; inp.blur(); } };
+  el.replaceWith(inp);
+  inp.focus();
+  inp.select();
+}
+
+function saveSuppEdit(day, slotId, pillId, newText) {
+  const text = newText.trim();
+  if (!text) return;
+  const slots = getSuppData(day);
+  const slot = slots.find(s => s.id === slotId);
+  if (!slot) return;
+  const pill = slot.pills.find(p => p.id === pillId);
+  if (!pill) return;
+  pill.text = text;
+  saveSuppData(day, slots);
+  renderSuppPanel(day);
+}
+
+function deleteSuppPill(day, slotId, pillId) {
+  const slots = getSuppData(day);
+  const slot = slots.find(s => s.id === slotId);
+  if (!slot) return;
+  slot.pills = slot.pills.filter(p => p.id !== pillId);
+  saveSuppData(day, slots);
+  renderSuppPanel(day);
+}
+
+function moveSuppPillUI(day, slotId, pillId) {
+  document.querySelectorAll('.spe-move-sel').forEach(s => s.remove());
+  const slots = getSuppData(day);
+  const others = slots.filter(s => s.id !== slotId);
+  if (!others.length) return;
+  const el = document.getElementById('spe-' + pillId);
+  if (!el) return;
+  const sel = document.createElement('select');
+  sel.className = 'spe-move-sel';
+  sel.style.cssText = 'background:var(--s1);border:1px solid var(--purple);border-radius:6px;color:var(--text);font-size:11px;padding:2px 6px;margin-left:4px;cursor:pointer;';
+  sel.innerHTML = '<option value="">Move to...</option>' + others.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+  sel.onchange = () => { if (sel.value) doMoveSuppPill(day, slotId, sel.value, pillId); else sel.remove(); };
+  sel.onblur = () => setTimeout(() => sel.remove(), 200);
+  el.insertAdjacentElement('afterend', sel);
+  sel.focus();
+}
+
+function doMoveSuppPill(day, fromSlotId, toSlotId, pillId) {
+  const slots = getSuppData(day);
+  const from = slots.find(s => s.id === fromSlotId);
+  const to = slots.find(s => s.id === toSlotId);
+  if (!from || !to) return;
+  const idx = from.pills.findIndex(p => p.id === pillId);
+  if (idx === -1) return;
+  const [pill] = from.pills.splice(idx, 1);
+  to.pills.push(pill);
+  saveSuppData(day, slots);
+  renderSuppPanel(day);
+}
+
+function addSuppPill(day, slotId) {
+  const container = document.getElementById('supp-pills-' + slotId);
+  if (!container) return;
+  if (container.querySelector('.spe-new-inp')) return;
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'spe-input spe-new-inp';
+  inp.placeholder = 'New item...';
+  inp.style.marginTop = '4px';
+  inp.onblur = () => { const t = inp.value.trim(); if (t) confirmAddPill(day, slotId, t); else inp.remove(); };
+  inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') inp.remove(); };
+  const addBtn = container.querySelector('.spe-add-btn');
+  container.insertBefore(inp, addBtn);
+  inp.focus();
+}
+
+function confirmAddPill(day, slotId, text) {
+  const slots = getSuppData(day);
+  const slot = slots.find(s => s.id === slotId);
+  if (!slot) return;
+  const newId = slotId + '-p' + Date.now();
+  slot.pills.push({id: newId, text});
+  saveSuppData(day, slots);
+  renderSuppPanel(day);
 }
 
 // ── WORKOUT PLAN CONSTANTS ────────────────────────────────
