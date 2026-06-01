@@ -1308,7 +1308,8 @@
     <!-- Day Toggle -->
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
       <button class="btn btn-primary" id="supp-day-training" onclick="switchSuppDay('training')">🏋 Training Day (Mon, Tue, Thu, Fri)</button>
-      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">🏃 Cardio/Rest Day (Wed, Sat, Sun)</button>
+      <button class="btn" id="supp-day-cardio" onclick="switchSuppDay('cardio')">🏃 Cardio Day (Wed, Sat)</button>
+      <button class="btn" id="supp-day-rest" onclick="switchSuppDay('rest')">😴 Full Rest (Sun)</button>
     </div>
 
     <!-- Training Day Schedule -->
@@ -1451,10 +1452,122 @@
 
     </div>
 
-    <!-- Rest Day (Wed, Sat, Sun) Schedule -->
+    <!-- Cardio Day (Wed, Sat) Schedule -->
+    <div id="supp-panel-cardio" class="hidden">
+      <div class="card" style="margin-bottom:12px;background:rgba(34,211,160,0.06);border-color:rgba(34,211,160,0.2);">
+        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Cardio day — intense aerobic work + core. L-Carnitine + Garlic shift to 10 AM (no pre-workout lifting window). <b style="color:var(--text);">Electrolyte sodium matrix still active</b> during cardio session — you are sweating heavily. No sauna needed (cardio IS the heat stimulus).</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#a78bfa;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">🌄 MORNING WELLNESS</span>
+          <span class="supp-slot-when">Identical to training days</span>
+          <span class="supp-alarm">⏰ 4:45 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">☕ Lung Cleanse Tea + ☀️ Sunlight + 🧘 Pranayama/Yoga + 🧊 Cold Shower</span>
+        </div>
+        <div class="supp-note">Circadian anchoring is non-negotiable every day.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🌅 BREAKING THE FAST</span>
+          <span class="supp-slot-when">Standard stack + L-Carnitine + Garlic shifted here</span>
+          <span class="supp-alarm">⏰ 10:00 AM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">🥚 Eggs + Avocado <b>high-fat meal</b></span>
+          <span class="supp-pill">Omega-3 Fish Oil <b>1,000–2,000 mg</b></span>
+          <span class="supp-pill">Amla Extract <b>500 mg</b> <em>Dose 1</em></span>
+          <span class="supp-pill">Curcumin + Piperine <b>500 mg</b></span>
+          <span class="supp-pill">Vitamin D3 + K2 <b>2,000–5,000 IU</b></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">L-Carnitine L-Tartrate <b>1,000 mg</b> <em>cardio day shift</em></span>
+          <span class="supp-pill" style="background:rgba(34,211,160,0.08);border-color:rgba(34,211,160,0.25);color:#22d3a0;">Odourless Garlic Extract <b>500 mg</b> <em>TMAO shield — daily</em></span>
+        </div>
+        <div class="supp-note">No pre-workout window on cardio days — L-Carnitine loads at breakfast instead. TMAO rule never takes a day off.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.12);color:#22d3a0;">🍌 PRE-CARDIO SNACK</span>
+          <span class="supp-slot-when">Light carbs to fuel aerobic output</span>
+          <span class="supp-alarm">⏰ 1:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">🍌 Banana or fruit — light carb fuel</span>
+          <span class="supp-pill">Berberine <b>500 mg</b> + Psyllium Husk <b>5g</b> <em>pre-cardio blockade</em></span>
+        </div>
+        <div class="supp-note">Berberine blunts any glycaemic spike from the snack. No L-Carnitine here — already taken at 10 AM.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🏃 CARDIO SESSION</span>
+          <span class="supp-slot-when">Electrolytes active — you are sweating</span>
+          <span class="supp-alarm">⏰ 2:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">⚡ Electrolyte + Sodium Matrix <b>500–1,000 mg sodium</b> <em>sip continuously</em></span>
+        </div>
+        <div class="supp-note">Wed: 45 min aerobic run (threshold → Zone 2). Sat: VO2 max sprints 6×1 min @ 16.5–17.5 km/h. Sodium still required — sweat loss is high. Never plain water alone.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#f09030;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(240,144,48,0.15);color:#f09030;">🥩 POST-CARDIO LUNCH</span>
+          <span class="supp-slot-when">Plant Sterols during meal</span>
+          <span class="supp-alarm">⏰ 4:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">High protein + clean carbs</span>
+          <span class="supp-pill">Plant Sterols <b>1–1.5g</b> <em>Dose 1 — during meal</em></span>
+        </div>
+        <div class="supp-note">No L-Carnitine or Garlic here — already taken at breakfast. Sterols intercept dietary cholesterol as always.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#22d3a0;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(34,211,160,0.15);color:#22d3a0;">🧘 YOGA NIDRA (NSDR)</span>
+          <span class="supp-slot-when">CNS recovery — still runs on cardio days</span>
+          <span class="supp-alarm">⏰ 5:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Yoga Nidra <b>20–30 min</b></span>
+        </div>
+        <div class="supp-note">Cardio creates significant CNS load. NSDR resets the nervous system and accelerates aerobic recovery.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#7c3aed;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(124,58,237,0.15);color:#a78bfa;">💊 EVENING BLOCKADE</span>
+          <span class="supp-slot-when">30 min before dinner — empty stomach</span>
+          <span class="supp-alarm">⏰ 7:30 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Berberine <b>500 mg</b> <em>Dose 2</em></span>
+          <span class="supp-pill">Raw Psyllium Husk <b>5g in 16oz water</b></span>
+        </div>
+        <div class="supp-note">Lipid blockade never takes a day off. Same as training days.</div>
+      </div>
+
+      <div class="supp-slot" style="--slot-color:#8a5cf6;">
+        <div class="supp-slot-header">
+          <span class="supp-time-badge" style="background:rgba(138,92,246,0.15);color:#8a5cf6;">🌙 DINNER & FAST</span>
+          <span class="supp-slot-when">Eating window closes 8:00 PM</span>
+          <span class="supp-alarm">🕗 8:00 PM</span>
+        </div>
+        <div class="supp-pills">
+          <span class="supp-pill">Ashwagandha KSM-66 <b>300–600 mg</b></span>
+        </div>
+        <div class="supp-note">Take with dinner. Blunts cortisol from cardio load, preps sleep architecture. 14-hour fast begins now.</div>
+      </div>
+    </div>
+
+    <!-- Full Rest Day (Sun) Schedule -->
     <div id="supp-panel-rest" class="hidden">
       <div class="card" style="margin-bottom:12px;background:rgba(90,85,117,0.1);border-color:rgba(90,85,117,0.25);">
-        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Cardio/recovery days (Wed=aerobic run+core, Sat=VO2 sprints+core, Sun=full rest): same eating window (10 AM–8 PM), same morning wellness routine. Two changes — <b style="color:var(--text);">L-Carnitine + Garlic move to 10:00 AM breakfast</b> (no pre-workout window), and <b style="color:var(--text);">no electrolyte sodium drink, no sauna</b>. Still do Yoga Nidra at 5:30 PM.</div>
+        <div style="color:#a09ab8;font-size:13px;line-height:1.5;">Sunday — zero structured exercise. Same eating window (10 AM–8 PM), same morning wellness. L-Carnitine + Garlic at breakfast. No electrolytes, no sauna. Full CNS recovery.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#a78bfa;">
@@ -1501,11 +1614,11 @@
 
       <div class="supp-slot" style="--slot-color:#5a5575;opacity:0.55;">
         <div class="supp-slot-header">
-          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">⛔ NO TRAINING TODAY</span>
-          <span class="supp-slot-when">Skip electrolytes and sauna — active recovery only</span>
+          <span class="supp-time-badge" style="background:rgba(90,85,117,0.2);color:#5a5575;">😴 ABSOLUTE REST</span>
+          <span class="supp-slot-when">Zero structured exercise — CNS recovery day</span>
           <span class="supp-alarm" style="color:#5a5575;">2:00 PM</span>
         </div>
-        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Walking, mobility, or light yoga. No structured barbell work. No electrolyte matrix.</div>
+        <div class="supp-note" style="border-top:none;padding-top:0;color:#5a5575;">Walking, deep stretching, mobility only. No barbell, no cardio, no electrolyte matrix. Cortisol at rock bottom by end of day.</div>
       </div>
 
       <div class="supp-slot" style="--slot-color:#22d3a0;">
@@ -2220,18 +2333,17 @@ function switchHealthTab(tab) {
   if (tab==='workout') renderWorkoutPlan();
   if (tab==='meals') renderMealHistory();
   if (tab==='supplements') {
-    // Auto-select Training or Cardio/Rest based on today
     const dow = new Date().getDay(); // 0=Sun,1=Mon,...,6=Sat
-    const isTraining = [1,2,4,5].includes(dow); // Mon,Tue,Thu,Fri
-    switchSuppDay(isTraining ? 'training' : 'rest');
+    const mode = [1,2,4,5].includes(dow) ? 'training' : [3,6].includes(dow) ? 'cardio' : 'rest';
+    switchSuppDay(mode);
   }
 }
 
 function switchSuppDay(day) {
-  document.getElementById('supp-panel-training').classList.toggle('hidden', day!=='training');
-  document.getElementById('supp-panel-rest').classList.toggle('hidden', day!=='rest');
-  document.getElementById('supp-day-training').className = 'btn' + (day==='training'?' btn-primary':'');
-  document.getElementById('supp-day-rest').className = 'btn' + (day==='rest'?' btn-primary':'');
+  ['training','cardio','rest'].forEach(d => {
+    document.getElementById('supp-panel-'+d).classList.toggle('hidden', d!==day);
+    document.getElementById('supp-day-'+d).className = 'btn' + (d===day?' btn-primary':'');
+  });
 }
 
 // ── WORKOUT PLAN CONSTANTS ────────────────────────────────
