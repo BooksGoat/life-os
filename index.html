@@ -768,8 +768,9 @@
     .supp-pill em { color:var(--muted); font-style:normal; font-size:11px; margin-left:3px; }
     .supp-note { font-size:12px; color:var(--muted); border-top:1px solid var(--border); padding-top:8px; line-height:1.5; }
     .supp-alarm { margin-left:auto; color:#22d3a0; font-size:14px; font-weight:700; white-space:nowrap; letter-spacing:.01em; }
-    .spe-pill { display:inline-flex; align-items:center; gap:4px; cursor:default; }
-    .spe-text { cursor:pointer; }
+    .spe-pill { display:inline-flex; align-items:center; gap:4px; cursor:default; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:8px; padding:5px 12px; transition:background .12s; }
+    .spe-pill:hover { background:rgba(255,255,255,0.09); }
+    .spe-text { cursor:pointer; font-size:12px; color:var(--text); }
     .spe-text:hover { color:#c4b5fd; text-decoration:underline dotted; }
     .spe-actions { display:none; gap:2px; align-items:center; }
     .spe-pill:hover .spe-actions { display:inline-flex; }
